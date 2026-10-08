@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace Overview – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <!-- Hero Banner -->
+    <div class="p-5 mb-5 rounded-4 text-white shadow-sm" style="background: radial-gradient(circle at 80% 20%, #ff5e62 0%, #1e3a8a 60%, #090d16 100%);">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-white text-dark px-3 py-2 rounded-pill fw-semibold mb-3">
+                    <i class="bi bi-shop text-danger me-1"></i> Peer-to-Peer Campus Marketplace
+                </span>
+                <h1 class="display-6 fw-bold mb-3 tracking-tight">How the Campus Marketplace Works</h1>
+                <p class="lead text-white text-opacity-80 fs-6 mb-4" style="max-width: 650px;">
+                    A secure internal marketplace where college students buy, sell, exchange, or give away textbooks, scientific calculators, mini-drafters, and lab equipment with zero fees.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-light btn-sm rounded-pill px-4 fw-semibold">
+                        <i class="bi bi-search me-1 text-danger"></i> Browse Live Catalog
+                    </a>
+                    {% if not session.get('user_id') %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to List or Buy
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                            <i class="bi bi-person-plus me-1"></i> Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.18);">
+                    <div class="display-5 fw-bold text-white mb-1">{{ total_listings or '120+' }}</div>
+                    <div class="small text-white text-opacity-75 mb-3">Active Campus Listings</div>
+                    <div class="display-5 fw-bold text-white mb-1">{{ total_sold or '350+' }}</div>
+                    <div class="small text-white text-opacity-75">Items Successfully Rehomed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-Step Process Guide -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-semibold">Step-by-Step Flow</span>
+            <h3 class="fw-bold text-dark mt-2">The 4-Step Student Trading Lifecycle</h3>
+            <p class="text-muted small">Designed for convenience, safety, and transparent pricing</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm text-center">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">1. List Your Item</h5>
+                    <p class="text-secondary small mb-0">
+                        Snap a photo, select condition (Brand New &rarr; Fair), set your price, or mark it as a <strong>Free Giveaway</strong> or <strong>Barter Exchange</strong>.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm text-center">
+                    <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">2. Negotiate &amp; Connect</h5>
+                    <p class="text-secondary small mb-0">
+                        Interested buyers submit offers or message the seller directly within CampusShare. No need to share personal phone numbers.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm text-center">
+                    <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">3. Safe Handover</h5>
+                    <p class="text-secondary small mb-0">
+                        Meet on campus at designated safe spots (Central Library, Cafeteria, or Student Center). Inspect the item physically before paying.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm text-center">
+                    <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">4. Earn Trust &amp; Badges</h5>
+                    <p class="text-secondary small mb-0">
+                        Mark listing as sold to earn +10 campus reputation points, boost your Trust Score, and unlock community badges.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supported Categories Grid -->
+    <div class="p-4 rounded-4 bg-white border shadow-sm mb-5">
+        <h4 class="fw-bold text-dark mb-3"><i class="bi bi-tags text-primary me-2"></i>What You Can Find &amp; Trade</h4>
+        <div class="row g-3">
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-book fs-3 text-primary"></i>
+                    <div>
+                        <strong class="d-block text-dark">Textbooks &amp; Notes</strong>
+                        <span class="text-muted small">Engineering, Science, Reference guides</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-calculator fs-3 text-success"></i>
+                    <div>
+                        <strong class="d-block text-dark">Calculators</strong>
+                        <span class="text-muted small">Casio fx-991, Graphing calculators</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-cpu fs-3 text-warning"></i>
+                    <div>
+                        <strong class="d-block text-dark">Project Kits &amp; IoT</strong>
+                        <span class="text-muted small">Arduino, Raspberry Pi, Sensors, Breadboards</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-pencil-ruler fs-3 text-info"></i>
+                    <div>
+                        <strong class="d-block text-dark">Drafting &amp; Lab Gear</strong>
+                        <span class="text-muted small">Mini-drafters, Drawing boards, Lab aprons</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-bicycle fs-3 text-danger"></i>
+                    <div>
+                        <strong class="d-block text-dark">Campus Cycles</strong>
+                        <span class="text-muted small">Bicycles, Locks, Commuter gear</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="p-3 rounded-3 bg-light border d-flex align-items-center gap-3">
+                    <i class="bi bi-gift fs-3 text-purple"></i>
+                    <div>
+                        <strong class="d-block text-dark">Free Giveaways</strong>
+                        <span class="text-muted small">Stationery, Old editions, Senior donations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Safety & Rules -->
+    <div class="p-4 rounded-4 bg-light border mb-5">
+        <h4 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>Campus Trading Safety Rules</h4>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <strong class="text-dark d-block mb-1"><i class="bi bi-building me-1 text-primary"></i>On-Campus Only</strong>
+                    <p class="text-secondary small mb-0">Always arrange pick-up inside college premises during daylight hours.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <strong class="text-dark d-block mb-1"><i class="bi bi-cash me-1 text-success"></i>Pay After Inspection</strong>
+                    <p class="text-secondary small mb-0">Verify the condition and functionality of hardware kits before handing over payment.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 border h-100">
+                    <strong class="text-dark d-block mb-1"><i class="bi bi-flag me-1 text-danger"></i>Report Fraud or Misconduct</strong>
+                    <p class="text-secondary small mb-0">Every listing features a direct report button to notify college administrators.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="text-center p-5 rounded-4 bg-white border shadow-sm">
+        <h3 class="fw-bold text-dark mb-2">Start Exploring Campus Listings</h3>
+        <p class="text-secondary mb-4">Discover great academic deals posted by your fellow students right now.</p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-cs-primary rounded-pill px-4">
+                <i class="bi bi-shop me-1"></i> Browse Marketplace
+            </a>
+            {% if not session.get('user_id') %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Post Listing
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

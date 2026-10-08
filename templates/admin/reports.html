@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Content Moderation &amp; Reports – CAMPUSSHARE Admin{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-flag-fill text-danger me-2"></i>Reported Content Moderation</h4>
+            <p class="text-secondary small mb-0">Review community moderation flags regarding academic accuracy, spam, and copyright</p>
+        </div>
+    </div>
+
+    <!-- Filter Pills (Normal HTML GET Links) -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ url_for('admin.manage_reports') }}" 
+           class="btn btn-sm {% if filter_val == 'all' or not filter_val %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            All Reports ({{ reports|length }})
+        </a>
+        <a href="{{ url_for('admin.manage_reports', filter='pending') }}" 
+           class="btn btn-sm {% if filter_val == 'pending' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            Pending Review
+        </a>
+        <a href="{{ url_for('admin.manage_reports', filter='resolved') }}" 
+           class="btn btn-sm {% if filter_val == 'resolved' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            Resolved Archive
+        </a>
+    </div>
+
+    <div class="cs-card">
+        {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Reported Resource</th>
+                            <th>Violation Reason</th>
+                            <th>Flagged By</th>
+                            <th>Date Flagged</th>
+                            <th>Status</th>
+                            <th class="text-end">Moderator Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rep in reports %}
+                        <tr>
+                            <!-- Resource -->
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    <a href="/resources/view/{{ rep.resource_id }}" class="text-decoration-none text-dark">
+                                        {{ rep.resource_title }}
+                                    </a>
+                                </div>
+                                {% if rep.details %}
+                                    <small class="text-muted d-block text-truncate" style="max-width: 250px;">Note: {{ rep.details }}</small>
+                                {% endif %}
+                            </td>
+
+                            <!-- Reason -->
+                            <td>
+                                <span class="badge bg-danger-subtle text-danger border">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ rep.reason }}
+                                </span>
+                            </td>
+
+                            <!-- Flagged By -->
+                            <td>
+                                <span class="fw-semibold text-dark">@{{ rep.username }}</span>
+                            </td>
+
+                            <!-- Timestamp -->
+                            <td class="text-muted">{{ rep.created_at.strftime('%Y-%m-%d %H:%M') if rep.created_at else '' }}</td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if rep.status == 'pending' %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border">PENDING</span>
+                                {% elif rep.status == 'resolved' %}
+                                    <span class="badge bg-success-subtle text-success border">RESOLVED</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border">DISMISSED</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="text-end">
+                                {% if rep.status == 'pending' %}
+                                    <div class="d-inline-flex gap-1">
+                                        <!-- Resolve -->
+                                        <form method="POST" action="{{ url_for('admin.resolve_report', report_id=rep._id) }}" class="d-inline">
+                                            <input type="hidden" name="action" value="resolve">
+                                            <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Mark Resolved">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- Dismiss -->
+                                        <form method="POST" action="{{ url_for('admin.resolve_report', report_id=rep._id) }}" class="d-inline">
+                                            <input type="hidden" name="action" value="dismiss">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Dismiss False Flag">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- Purge Resource -->
+                                        <form method="POST" action="{{ url_for('admin.resolve_report', report_id=rep._id) }}" 
+                                              onsubmit="return confirm('Permanently remove this reported resource from the catalog?');" class="d-inline">
+                                            <input type="hidden" name="action" value="remove_resource">
+                                            <button type="submit" class="btn btn-sm btn-danger py-1 px-2" title="Delete Offending Resource">
+                                                <i class="bi bi-trash"></i> Remove Item
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">Archived</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-shield-check fs-1 text-success d-block mb-2"></i>
+                No content reports pending moderation. Catalog is healthy!
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

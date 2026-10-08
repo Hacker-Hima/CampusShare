@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Reserve {{ resource.title }} – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-8">
+        <div class="cs-card p-4">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="cs-stat-icon amber">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-1">Campus Facility Reservation</h4>
+                    <p class="text-secondary small mb-0">Book seminar halls, presentation projectors, meeting rooms, or labs</p>
+                </div>
+            </div>
+
+            <!-- Facility Details Banner -->
+            <div class="p-3 bg-light rounded border mb-4">
+                <h5 class="fw-bold text-dark mb-1">{{ resource.title }}</h5>
+                <div class="small text-secondary">
+                    <div><i class="bi bi-geo-alt me-1 text-danger"></i><strong>Location:</strong> {{ resource.location or 'Campus Main Block' }}</div>
+                    <div><i class="bi bi-building me-1 text-primary"></i><strong>Department In-Charge:</strong> {{ resource.department }}</div>
+                </div>
+            </div>
+
+            <!-- Reservation Form with Conflict-Free Time Slots -->
+            <form method="POST" action="{{ url_for('reservations.book_resource', resource_id=resource._id) }}">
+                <div class="row g-3">
+                    <!-- Date Picker -->
+                    <div class="col-md-4">
+                        <label for="date" class="form-label small fw-semibold text-secondary">Reservation Date</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ today_str }}" required>
+                    </div>
+
+                    <!-- Start Time -->
+                    <div class="col-md-4">
+                        <label for="start_time" class="form-label small fw-semibold text-secondary">Start Time</label>
+                        <input type="time" class="form-control" id="start_time" name="start_time" value="09:00" required>
+                    </div>
+
+                    <!-- End Time -->
+                    <div class="col-md-4">
+                        <label for="end_time" class="form-label small fw-semibold text-secondary">End Time</label>
+                        <input type="time" class="form-control" id="end_time" name="end_time" value="11:00" required>
+                    </div>
+
+                    <!-- Academic Purpose -->
+                    <div class="col-12">
+                        <label for="purpose" class="form-label small fw-semibold text-secondary">Event / Academic Purpose</label>
+                        <textarea class="form-control" id="purpose" name="purpose" rows="3" 
+                                  placeholder="e.g. ACM Student Chapter Technical Workshop on NoSQL Architectures..." required></textarea>
+                        <small class="text-muted">The system will automatically verify whether your selected time overlaps with an existing booking.</small>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{{ url_for('resources.view_resource', resource_id=resource._id) }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-warning text-dark fw-semibold px-4">
+                        <i class="bi bi-calendar-check me-1"></i> Confirm Reservation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

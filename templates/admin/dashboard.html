@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration – CAMPUSSHARE Platform{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Admin Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold text-dark mb-0">System Control Center</h3>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Administrator Privileges</span>
+            </div>
+            <p class="text-secondary small mb-0 mt-1">MongoDB Document Store Analytics &amp; Campus Resource Oversight</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('admin.manage_resources') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-folder-check me-1"></i> Review Submissions
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-cs-secondary btn-sm">
+                <i class="bi bi-people me-1"></i> User Directory
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Statistic Widgets: Tier 1 (Users & Resources) -->
+    <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-stat-card">
+                <div class="cs-stat-icon blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="cs-stat-number">{{ stats.total_users }}</div>
+                    <div class="cs-stat-label">Total Users ({{ stats.total_students }} Std / {{ stats.total_faculty }} Fac)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-stat-card">
+                <div class="cs-stat-icon green">
+                    <i class="bi bi-collection-fill"></i>
+                </div>
+                <div>
+                    <div class="cs-stat-number">{{ stats.total_resources }}</div>
+                    <div class="cs-stat-label">Platform Resources</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-stat-card">
+                <div class="cs-stat-icon amber">
+                    <i class="bi bi-hourglass-top"></i>
+                </div>
+                <div>
+                    <div class="cs-stat-number">{{ stats.pending_approvals }}</div>
+                    <div class="cs-stat-label">Pending Approvals</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-stat-card">
+                <div class="cs-stat-icon red">
+                    <i class="bi bi-flag-fill"></i>
+                </div>
+                <div>
+                    <div class="cs-stat-number">{{ stats.total_reports }}</div>
+                    <div class="cs-stat-label">Pending Reports</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Statistic Widgets: Tier 2 (Transactions, Marketplace & Facility Bookings) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card p-3 mb-0 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Marketplace Items</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ stats.total_marketplace }}</h4>
+                    <a href="{{ url_for('admin.manage_marketplace') }}" class="small text-decoration-none">Moderate</a>
+                </div>
+                <div class="cs-stat-icon green" style="width:40px; height:40px;"><i class="bi bi-shop"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card p-3 mb-0 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Open Disputes</span>
+                    <h4 class="fw-bold text-danger mb-0">{{ stats.total_disputes }}</h4>
+                    <a href="{{ url_for('admin.manage_disputes') }}" class="small text-decoration-none text-danger">Resolve</a>
+                </div>
+                <div class="cs-stat-icon red" style="width:40px; height:40px;"><i class="bi bi-exclamation-triangle"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card p-3 mb-0 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Lost &amp; Found</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ stats.total_lostfound }}</h4>
+                    <a href="{{ url_for('admin.manage_lost_found') }}" class="small text-decoration-none">View Reports</a>
+                </div>
+                <div class="cs-stat-icon blue" style="width:40px; height:40px;"><i class="bi bi-compass"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card p-3 mb-0 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Active Borrows</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ stats.active_borrowings }}</h4>
+                    <a href="{{ url_for('admin.manage_borrowings') }}" class="small text-decoration-none">Manage</a>
+                </div>
+                <div class="cs-stat-icon purple" style="width:40px; height:40px;"><i class="bi bi-box-seam"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MongoDB Aggregation Visualizations (Server-Side CSS Progress Bars - No JavaScript) -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <div>
+                        <h5 class="cs-card-title mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Resources by Department</h5>
+                        <small class="text-muted">Generated via MongoDB <code>$group</code> Aggregation</small>
+                    </div>
+                </div>
+                <div class="py-2">
+                    {% if resources_by_dept %}
+                        {% for dept in resources_by_dept %}
+                            {% set pct = ((dept.count / stats.total_resources) * 100)|round|int if stats.total_resources > 0 else 0 %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small fw-semibold text-secondary mb-1">
+                                    <span>Department of {{ dept._id or 'General' }}</span>
+                                    <span>{{ dept.count }} items ({{ pct }}%)</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct }}%;" 
+                                         aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small mb-0">No department statistics available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <div>
+                        <h5 class="cs-card-title mb-0"><i class="bi bi-layers me-2 text-primary"></i>Resource Classification</h5>
+                        <small class="text-muted">Breakdown across Academic, Physical, and Campus tiers</small>
+                    </div>
+                </div>
+                <div class="py-2">
+                    {% if resources_by_type %}
+                        {% for t in resources_by_type %}
+                            {% set type_pct = ((t.count / stats.total_resources) * 100)|round|int if stats.total_resources > 0 else 0 %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small fw-semibold text-secondary mb-1">
+                                    <span>{{ t._id|capitalize }} Resources</span>
+                                    <span>{{ t.count }} items ({{ type_pct }}%)</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar {% if t._id == 'academic' %}bg-primary{% elif t._id == 'physical' %}bg-success{% else %}bg-warning{% endif %}" 
+                                         role="progressbar" style="width: {{ type_pct }}%; 
+                                         aria-valuenow="{{ type_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small mb-0">No resource type data.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most Downloaded Platform Resources & Activity Logs -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title"><i class="bi bi-trophy me-2 text-warning"></i>Most Popular Campus Resources</h5>
+                    <a href="{{ url_for('admin.manage_resources') }}" class="small text-decoration-none">Full Directory</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Downloads</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in popular_resources %}
+                            <tr>
+                                <td class="fw-semibold text-dark text-truncate" style="max-width: 180px;">
+                                    <a href="/resources/view/{{ r._id }}" class="text-decoration-none text-dark">{{ r.title }}</a>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ r.resource_type }}</span></td>
+                                <td><span class="badge bg-primary-subtle text-primary border"><i class="bi bi-download me-1"></i>{{ r.downloads }}</span></td>
+                                <td><i class="bi bi-star-fill text-warning me-1"></i>{{ r.rating or '5.0' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title"><i class="bi bi-clock-history me-2 text-secondary"></i>Recent Platform Audit Log</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Summary</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for act in recent_activities %}
+                            <tr>
+                                <td class="fw-semibold text-dark">{{ act.username }}</td>
+                                <td><span class="badge bg-light text-secondary border">{{ act.action|replace('_', ' ') }}</span></td>
+                                <td class="text-secondary text-truncate" style="max-width: 180px;">{{ act.description }}</td>
+                                <td class="text-muted">{{ act.created_at.strftime('%H:%M, %d %b') if act.created_at else '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Account Registration – CAMPUSSHARE Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-9 col-lg-7">
+        <div class="cs-card shadow-sm p-4">
+            <div class="text-center mb-4">
+                <div class="cs-stat-icon green mx-auto mb-2">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">Create Institutional Account</h4>
+                <p class="text-muted small">Register as a Student or Faculty member to share and borrow campus resources</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <div class="row g-3">
+                    <!-- Role Selection -->
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary">Campus Role</label>
+                        <select class="form-select" name="role" required>
+                            <option value="student" {% if form.get('role') == 'student' %}selected{% endif %}>Student</option>
+                            <option value="faculty" {% if form.get('role') == 'faculty' %}selected{% endif %}>Faculty / Staff</option>
+                        </select>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label for="full_name" class="form-label small fw-semibold text-secondary">Full Name</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               value="{{ form.get('full_name', '') }}" placeholder="e.g. Rahul Verma" required>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="col-md-6">
+                        <label for="username" class="form-label small fw-semibold text-secondary">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ form.get('username', '') }}" placeholder="e.g. rahul_cse" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label for="email" class="form-label small fw-semibold text-secondary">College / University Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ form.get('email', '') }}" placeholder="e.g. rahul@campusshare.edu" required>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label small fw-semibold text-secondary">Contact Phone</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="{{ form.get('phone', '') }}" placeholder="e.g. 9876543210">
+                    </div>
+
+                    <!-- Department -->
+                    <div class="col-md-6">
+                        <label for="department" class="form-label small fw-semibold text-secondary">Academic Department</label>
+                        <select class="form-select" id="department" name="department" required>
+                            <option value="">-- Select Department --</option>
+                            <option value="CSE" {% if form.get('department') == 'CSE' %}selected{% endif %}>Computer Science &amp; Engg (CSE)</option>
+                            <option value="ECE" {% if form.get('department') == 'ECE' %}selected{% endif %}>Electronics &amp; Comm Engg (ECE)</option>
+                            <option value="IT" {% if form.get('department') == 'IT' %}selected{% endif %}>Information Technology (IT)</option>
+                            <option value="MECH" {% if form.get('department') == 'MECH' %}selected{% endif %}>Mechanical Engg (MECH)</option>
+                            <option value="CIVIL" {% if form.get('department') == 'CIVIL' %}selected{% endif %}>Civil Engg (CIVIL)</option>
+                            <option value="EEE" {% if form.get('department') == 'EEE' %}selected{% endif %}>Electrical &amp; Electronics (EEE)</option>
+                            <option value="BASIC SCIENCES" {% if form.get('department') == 'BASIC SCIENCES' %}selected{% endif %}>Basic Sciences / Humanities</option>
+                        </select>
+                    </div>
+
+                    <!-- Year (for students) -->
+                    <div class="col-md-3">
+                        <label for="year" class="form-label small fw-semibold text-secondary">Year of Study</label>
+                        <select class="form-select" id="year" name="year">
+                            <option value="1" {% if form.get('year') == '1' %}selected{% endif %}>1st Year</option>
+                            <option value="2" {% if form.get('year') == '2' %}selected{% endif %}>2nd Year</option>
+                            <option value="3" {% if form.get('year') == '3' %}selected{% endif %}>3rd Year</option>
+                            <option value="4" {% if form.get('year') == '4' %}selected{% endif %}>4th Year</option>
+                        </select>
+                    </div>
+
+                    <!-- Section -->
+                    <div class="col-md-3">
+                        <label for="section" class="form-label small fw-semibold text-secondary">Section</label>
+                        <input type="text" class="form-control" id="section" name="section" 
+                               value="{{ form.get('section', '') }}" placeholder="A, B or C">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <label for="password" class="form-label small fw-semibold text-secondary">Password (min 6 characters)</label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="••••••••" required>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="col-md-6">
+                        <label for="confirm_password" class="form-label small fw-semibold text-secondary">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="••••••••" required>
+                    </div>
+
+                    <!-- Short Bio -->
+                    <div class="col-12">
+                        <label for="bio" class="form-label small fw-semibold text-secondary">Brief Academic Bio (Optional)</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="2" 
+                                  placeholder="e.g. CSE 3rd year student interested in Distributed Systems.">{{ form.get('bio', '') }}</textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-cs-primary w-100 py-2 mt-4 mb-3">
+                    <i class="bi bi-person-check me-1"></i> Register Account
+                </button>
+            </form>
+
+            <div class="text-center pt-2 border-top">
+                <span class="text-muted small">Already registered?</span>
+                <a href="{{ url_for('auth.login') }}" class="small fw-semibold text-decoration-none ms-1">Sign In to your account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Announcements – Administration{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-megaphone text-primary me-2"></i>Campus Announcements Management</h4>
+            <p class="text-secondary small mb-0">Publish official notices, eco-reuse drives, and semester exam alerts across all user portals.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- New Announcement Form -->
+        <div class="col-lg-5">
+            <div class="cs-card">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Broadcast New Announcement</h5>
+                <form method="POST" action="{{ url_for('admin.manage_announcements') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Announcement Title</label>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. 🌱 Semester Project Hardware Sharing Drive" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Priority Level</label>
+                        <select name="priority" class="form-select form-select-sm">
+                            <option value="normal">Normal (Blue banner)</option>
+                            <option value="high">High Alert (Yellow warning banner)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Message Content</label>
+                        <textarea name="content" class="form-control form-control-sm" rows="3" placeholder="Write notice details for students and faculty..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cs-primary btn-sm w-100">
+                        <i class="bi bi-broadcast me-1"></i> Publish Announcement
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Existing Announcements List -->
+        <div class="col-lg-7">
+            <div class="cs-card p-0">
+                <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark small text-uppercase">Active &amp; Archived Notices</span>
+                    <span class="badge bg-white text-secondary border">{{ announcements|length }} Total</span>
+                </div>
+
+                {% if announcements %}
+                    <div class="list-group list-group-flush small">
+                        {% for a in announcements %}
+                            <div class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <span class="badge bg-{% if a.priority == 'high' %}warning text-dark{% else %}primary{% endif %} me-1">{{ a.priority|upper }}</span>
+                                        <strong class="text-dark">{{ a.title }}</strong>
+                                    </div>
+                                    <span class="badge bg-{% if a.is_active %}success{% else %}secondary{% endif %}-subtle text-{% if a.is_active %}success{% else %}secondary{% endif %} border">
+                                        {% if a.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+                                    </span>
+                                </div>
+                                <p class="text-secondary mb-2">{{ a.content }}</p>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                    <span class="text-muted" style="font-size:0.75rem;">By {{ a.author_name }} &bull; {{ a.created_at.strftime('%d %b %Y') if a.created_at else '' }}</span>
+                                    <form method="POST" action="{{ url_for('admin.toggle_announcement', ann_id=a._id) }}">
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.75rem;">
+                                            {% if a.is_active %}Deactivate{% else %}Activate{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small py-4 mb-0 text-center">No announcements recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Conversation with {{ other_user.full_name if other_user else 'Campus User' }} – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ url_for('messages.inbox') }}" class="btn btn-outline-secondary btn-sm" title="Back to Inbox">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h5 class="fw-bold text-dark mb-0">
+                    {{ other_user.full_name if other_user else 'Campus User' }}
+                    {% if other_user and other_user.is_verified %}
+                        <i class="bi bi-patch-check-fill text-primary ms-1" title="Verified Member"></i>
+                    {% endif %}
+                </h5>
+                <span class="text-muted small">
+                    {{ other_user.department if other_user else '' }} &bull; 
+                    <span class="text-success fw-semibold"><i class="bi bi-shield-check"></i> {{ other_trust }}/100 Trust</span>
+                </span>
+            </div>
+        </div>
+
+        <div>
+            {% if other_user %}
+                <a href="{{ url_for('profile.public_profile', target_user_id=other_user._id) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-person-badge me-1"></i> View Profile
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Subject Context Banner -->
+    {% if conversation.subject %}
+        <div class="alert alert-light border py-2 px-3 mb-3 d-flex justify-content-between align-items-center small">
+            <div>
+                <i class="bi bi-info-circle text-primary me-2"></i>
+                <strong>Subject:</strong> {{ conversation.subject }}
+            </div>
+            {% if conversation.item_title %}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ conversation.item_title }}</span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Messages Container & Chat History -->
+    <div class="cs-card mb-3 p-3 bg-light" style="min-height: 380px; max-height: 550px; overflow-y: auto;">
+        {% if messages %}
+            {% for msg in messages %}
+                {% set is_me = (msg.sender_id == session.get('user_id')) %}
+                <div class="d-flex mb-3 {% if is_me %}justify-content-end{% else %}justify-content-start{% endif %}">
+                    <div style="max-width: 75%;">
+                        <div class="d-flex align-items-center gap-2 mb-1 {% if is_me %}justify-content-end{% endif %}">
+                            <span class="fw-bold small text-dark" style="font-size: 0.8rem;">
+                                {% if is_me %}You{% else %}{{ msg.sender_name }}{% endif %}
+                            </span>
+                            <span class="text-muted" style="font-size: 0.7rem;">
+                                {{ msg.created_at.strftime('%H:%M, %d %b') if msg.created_at else '' }}
+                            </span>
+                        </div>
+                        <div class="p-3 rounded shadow-sm {% if is_me %}bg-primary text-white{% else %}bg-white text-dark border{% endif %}" style="border-radius: 12px; font-size: 0.9rem; line-height: 1.45; word-break: break-word;">
+                            {{ msg.message_text }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                No messages in this conversation yet. Send a message below to start coordinating.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pure Server-Side Reply Form (Zero JavaScript, HTTP POST) -->
+    <div class="cs-card p-3">
+        <form method="POST" action="{{ url_for('messages.view_thread', conv_id=conversation._id) }}">
+            <div class="mb-2">
+                <textarea name="message_text" class="form-control" rows="2" placeholder="Type your response here (e.g. 'Can meet at CSE Block at 3 PM')..." required autofocus></textarea>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                    <i class="bi bi-shield-lock me-1"></i> Messages are encrypted &amp; logged on the campus academic server.
+                </span>
+                <button type="submit" class="btn btn-cs-primary btn-sm px-4">
+                    <i class="bi bi-send-fill me-1"></i> Send Reply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Catalog – CAMPUSSHARE Resource Discovery{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header & Action -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Campus Resource Discovery</h3>
+            <p class="text-secondary small mb-0">Search and filter peer study notes, hardware tools, and campus spaces</p>
+        </div>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-cs-primary btn-sm mt-3 mt-md-0">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Contribute Resource
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Multi-Parameter Search & Filter Form (Pure HTML GET Form - No JavaScript) -->
+    <div class="cs-card mb-4 bg-white">
+        <form method="GET" action="{{ url_for('resources.list_resources') }}">
+            <!-- Row 1: Keyword Search Bar & Primary Actions -->
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-lg-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" name="q" 
+                               value="{{ current_filters.q }}" 
+                               placeholder="Search across title, description, course subject, or #tags (e.g. DBMS, Arduino, OS)...">
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <select class="form-select" name="sort">
+                        <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>Sort: Newest First</option>
+                        <option value="downloads" {% if current_filters.sort == 'downloads' %}selected{% endif %}>Sort: Most Downloaded</option>
+                        <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>Sort: Highest Rated</option>
+                        <option value="views" {% if current_filters.sort == 'views' %}selected{% endif %}>Sort: Most Viewed</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-cs-primary w-100">
+                        <i class="bi bi-filter me-1"></i> Filter
+                    </button>
+                    {% if active_filters_count > 0 %}
+                        <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-secondary" title="Reset Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Row 2: Multi-Facet Filters -->
+            <div class="row g-2 pt-2 border-top">
+                <!-- Department Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Department</label>
+                    <select class="form-select form-select-sm" name="department">
+                        <option value="">All Departments</option>
+                        {% for d in ['CSE', 'ECE', 'IT', 'MECH', 'CIVIL', 'EEE', 'BASIC SCIENCES'] %}
+                            <option value="{{ d }}" {% if current_filters.department == d %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Semester Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Semester</label>
+                    <select class="form-select form-select-sm" name="semester">
+                        <option value="">All Semesters</option>
+                        {% for s in ['1', '2', '3', '4', '5', '6', '7', '8'] %}
+                            <option value="{{ s }}" {% if current_filters.semester == s %}selected{% endif %}>Semester {{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Category</label>
+                    <select class="form-select form-select-sm" name="category">
+                        <option value="">All Categories</option>
+                        {% for c in categories %}
+                            <option value="{{ c.name }}" {% if current_filters.category == c.name %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Resource Type Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Asset Tier</label>
+                    <select class="form-select form-select-sm" name="type">
+                        <option value="">All Tiers</option>
+                        <option value="academic" {% if current_filters.resource_type == 'academic' %}selected{% endif %}>Academic Notes &amp; QP</option>
+                        <option value="physical" {% if current_filters.resource_type == 'physical' %}selected{% endif %}>Hardware &amp; Kits</option>
+                        <option value="campus" {% if current_filters.resource_type == 'campus' %}selected{% endif %}>Campus Facilities</option>
+                    </select>
+                </div>
+
+                <!-- Availability Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Availability</label>
+                    <select class="form-select form-select-sm" name="availability">
+                        <option value="">Any Status</option>
+                        <option value="available" {% if current_filters.availability == 'available' %}selected{% endif %}>Available Now</option>
+                        <option value="borrowed" {% if current_filters.availability == 'borrowed' %}selected{% endif %}>Borrowed</option>
+                        <option value="reserved" {% if current_filters.availability == 'reserved' %}selected{% endif %}>Reserved</option>
+                    </select>
+                </div>
+
+                <!-- Min Rating Filter -->
+                <div class="col-sm-6 col-md-3 col-lg-2">
+                    <label class="form-label small text-muted mb-1">Min Rating</label>
+                    <select class="form-select form-select-sm" name="min_rating">
+                        <option value="">Any Rating</option>
+                        <option value="4.5" {% if current_filters.min_rating == '4.5' %}selected{% endif %}>&ge; 4.5 Stars</option>
+                        <option value="4.0" {% if current_filters.min_rating == '4.0' %}selected{% endif %}>&ge; 4.0 Stars</option>
+                        <option value="3.0" {% if current_filters.min_rating == '3.0' %}selected{% endif %}>&ge; 3.0 Stars</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Status Banner -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="small text-secondary">
+            <strong>{{ resources|length }}</strong> resource{% if resources|length != 1 %}s{% endif %} found
+            {% if current_filters.q %}
+                matching <em>"{{ current_filters.q }}"</em>
+            {% endif %}
+            {% if active_filters_count > 0 %}
+                <span class="badge bg-primary-subtle text-primary ms-1">{{ active_filters_count }} filter(s) active</span>
+            {% endif %}
+        </div>
+        {% if active_filters_count > 0 %}
+            <a href="{{ url_for('resources.list_resources') }}" class="small text-decoration-none text-danger">
+                <i class="bi bi-x-circle me-1"></i> Clear all filters
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Resources Card Grid -->
+    {% if resources %}
+        <div class="row g-4">
+            {% for r in resources %}
+            <div class="col-md-6 col-lg-4">
+                <div class="cs-card h-100 mb-0 d-flex flex-column justify-content-between">
+                    <div>
+                        <!-- Category and Availability Badges -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge {% if r.resource_type == 'academic' %}bg-primary-subtle text-primary{% elif r.resource_type == 'physical' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} border">
+                                {{ r.category }}
+                            </span>
+                            <span class="cs-badge cs-badge-{{ r.availability }}">
+                                {{ r.availability|upper }}
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h5 class="fw-bold text-dark mb-1" style="font-size: 1.05rem; line-height: 1.35;">
+                            <a href="{{ url_for('resources.view_resource', resource_id=r._id) }}" class="text-decoration-none text-dark">
+                                {{ r.title }}
+                            </a>
+                        </h5>
+
+                        <!-- Academic Scope -->
+                        <div class="small text-secondary mb-2">
+                            <span class="fw-semibold text-primary">{{ r.department }}</span>
+                            {% if r.semester and r.semester != 'All' %} &bull; Sem {{ r.semester }}{% endif %}
+                            {% if r.subject %} &bull; {{ r.subject }}{% endif %}
+                        </div>
+
+                        <!-- Description Excerpt -->
+                        <p class="text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.4em;">
+                            {{ r.description }}
+                        </p>
+
+                        <!-- Embedded Tags Preview -->
+                        {% if r.tags %}
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                {% for tag in r.tags[:3] %}
+                                    <span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">#{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Footer Row -->
+                    <div class="pt-3 border-top mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2 small text-muted">
+                            <span><i class="bi bi-person me-1"></i>{{ r.owner_name or 'Faculty/Student' }}</span>
+                            <span><i class="bi bi-star-fill text-warning me-1"></i>{{ r.rating or '5.0' }}</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {% if r.resource_type == 'academic' %}
+                                    <i class="bi bi-download me-1"></i>{{ r.downloads }} downloads
+                                {% else %}
+                                    <i class="bi bi-eye me-1"></i>{{ r.views }} views
+                                {% endif %}
+                            </small>
+                            <a href="{{ url_for('resources.view_resource', resource_id=r._id) }}" class="btn btn-sm btn-outline-primary px-3">
+                                View Details &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5 cs-card">
+            <i class="bi bi-search fs-1 text-secondary d-block mb-2"></i>
+            <h5 class="fw-semibold text-dark">No matching resources found</h5>
+            <p class="text-muted small">No items matched your combination of keywords and filters.</p>
+            <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-secondary btn-sm">
+                Reset All Filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

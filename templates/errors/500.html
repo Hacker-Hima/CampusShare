@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Server Error (500) – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 col-lg-5 text-center">
+        <div class="mb-4">
+            <span class="display-1 fw-bold text-danger">500</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">Internal Server Error</h3>
+        <p class="text-secondary small mb-4">
+            An unexpected error occurred during request processing. The server administrators and platform logs have been informed. Please try again shortly.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-house me-1"></i> Return Home
+            </a>
+            <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-collection me-1"></i> Browse Catalog
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

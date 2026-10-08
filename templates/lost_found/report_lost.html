@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost Item – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-exclamation-octagon text-danger me-2"></i>Report a Lost Item</h4>
+            <p class="text-secondary small mb-0">Alert the campus security team, faculty blocks, and fellow students to help recover your lost item.</p>
+        </div>
+        <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Board
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cs-card">
+                <form method="POST" action="{{ url_for('lost_found.report_lost') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Casio fx-991MS Calculator, Blue Boat Earbuds, ID Card..." required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">Select Category...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Date When Misplaced</label>
+                            <input type="date" name="incident_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Last Known Campus Location <span class="text-danger">*</span></label>
+                        <input type="text" name="location" class="form-control" placeholder="e.g. Central Library 2nd floor, Tech Block Room 304, Cafeteria Table 12..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Contact Information / Room</label>
+                        <input type="text" name="contact_info" class="form-control" placeholder="Phone number, hostel room, or department">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Description &amp; Identifying Details</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Mention color, stickers, model number, keychains, or specific marks that help identify it..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-dark">Upload Photo (If available)</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-danger btn-sm px-4">
+                            <i class="bi bi-megaphone-fill me-1"></i> Post Lost Item Notice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} – Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('lost_found.list_items') }}" class="text-decoration-none">Lost &amp; Found</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ item.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Incident Detail -->
+        <div class="col-lg-8">
+            <div class="cs-card mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="badge bg-{% if item.item_type == 'lost' %}danger{% elif item.status == 'recovered' %}secondary{% else %}success{% endif %} text-white fs-6 text-uppercase">
+                        {% if item.status == 'recovered' %}
+                            ✓ Recovered Possession
+                        {% else %}
+                            {{ item.item_type|upper }} Item
+                        {% endif %}
+                    </span>
+                    <span class="badge bg-light text-secondary border small">{{ item.category }}</span>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-3">{{ item.title }}</h3>
+
+                <div class="p-3 bg-light rounded border mb-4">
+                    <div class="row g-3 small">
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Location Reported:</span>
+                            <strong class="text-dark"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.location }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Incident Date:</span>
+                            <strong class="text-dark"><i class="bi bi-calendar3 me-1"></i>{{ item.incident_date or 'Recent' }}</strong>
+                        </div>
+                        {% if item.storage_location %}
+                            <div class="col-12 border-top pt-2">
+                                <span class="text-muted d-block">Custody / Safe Storage:</span>
+                                <strong class="text-success"><i class="bi bi-shield-check me-1"></i>{{ item.storage_location }}</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-2">Description &amp; Marks</h5>
+                    <p class="text-secondary" style="white-space: pre-line;">{{ item.description or 'No extra details provided.' }}</p>
+                </div>
+
+                <!-- Claim Ownership Form (If Found and Not Reporter) -->
+                {% if item.item_type == 'found' and item.status != 'recovered' and not is_reporter and session.get('user_id') %}
+                    <div class="p-3 rounded bg-white border border-success-subtle mb-4">
+                        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-patch-question-fill text-success me-2"></i>Claim This Possession</h5>
+                        <p class="text-muted small mb-3">Is this yours? Provide verification details (identifying marks, stickers, color, or serial number) so the finder/security desk can verify ownership.</p>
+
+                        <form method="POST" action="{{ url_for('lost_found.claim_item', item_id=item._id) }}">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Proof of Ownership / Identifying Details</label>
+                                <textarea name="proof_details" class="form-control form-control-sm" rows="3" placeholder="Describe specific markings, scratches, wallpaper, stickers, or serial number proving this belongs to you..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm px-4">
+                                <i class="bi bi-shield-check me-1"></i> Submit Ownership Claim
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <!-- Resolve / Mark Recovered Button for Reporter -->
+                {% if (is_reporter or session.get('role') == 'admin') and item.status != 'recovered' %}
+                    <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary text-white mb-1">Incident Reporter Options</span>
+                            <div class="small text-secondary">Mark item as safely recovered once returned to owner.</div>
+                        </div>
+                        <form method="POST" action="{{ url_for('lost_found.resolve_item', item_id=item._id) }}">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-check2-circle me-1"></i> Mark as Recovered / Closed
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Existing Claims (Visible to Reporter or Admin) -->
+            {% if (is_reporter or session.get('role') == 'admin') and claims %}
+                <div class="cs-card">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-inbox me-2 text-primary"></i>Submitted Ownership Claims</h5>
+                    <div class="list-group list-group-flush small">
+                        {% for cl in claims %}
+                            <div class="list-group-item px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark">{{ cl.claimant_name }} ({{ cl.claimant_email }})</span>
+                                    <span class="badge bg-warning text-dark">{{ cl.status|upper }}</span>
+                                </div>
+                                <div class="text-secondary mb-2">"{{ cl.proof_details }}"</div>
+                                <a href="{{ url_for('messages.start_conversation', to_user_id=cl.claimant_id, item_title=item.title) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-chat-dots me-1"></i> Message Claimant
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Contact Card -->
+        <div class="col-lg-4">
+            <div class="cs-card text-center mb-4">
+                <div class="mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%; background: #e0f2fe; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #0369a1;">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">{{ item.reporter_name }}</h5>
+                <span class="text-muted small">Campus Reporter</span>
+
+                {% if item.contact_info %}
+                    <div class="p-3 my-3 bg-light rounded border text-start small">
+                        <span class="text-muted d-block">Contact Info:</span>
+                        <strong class="text-dark">{{ item.contact_info }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if session.get('user_id') and session.get('user_id') != item.reporter_id %}
+                    <a href="{{ url_for('messages.start_conversation', to_user_id=item.reporter_id, item_title=item.title, context_type='lost_found') }}" class="btn btn-cs-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Message Reporter Directly
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Board
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

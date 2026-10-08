@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Facility Reservations – CAMPUSSHARE Admin{% endblock %}
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-check-fill text-primary me-2"></i>Campus Facility Bookings</h4>
+            <p class="text-secondary small mb-0">Seminar halls, labs and conference room reservations</p>
+        </div>
+    </div>
+    <div class="cs-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Facility / Resource</th>
+                        <th>Reserved By</th>
+                        <th>Date &bull; Time</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ res.resource_title }}</td>
+                        <td>{{ res.user_name }} ({{ res.username }})</td>
+                        <td class="text-secondary">{{ res.date }} ({{ res.start_time }} - {{ res.end_time }})</td>
+                        <td class="text-secondary text-truncate" style="max-width: 250px;">{{ res.purpose }}</td>
+                        <td><span class="badge bg-success-subtle text-success border">{{ res.status|upper }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

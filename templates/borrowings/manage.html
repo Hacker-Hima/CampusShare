@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Hardware Borrowings – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-arrow-left-right text-primary me-2"></i>Hardware Borrowing Operations</h4>
+            <p class="text-secondary small mb-0">Approve checkouts, confirm equipment handovers, and register hardware returns</p>
+        </div>
+    </div>
+
+    <div class="cs-card">
+        {% if borrowings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Hardware Resource</th>
+                            <th>Borrower Student</th>
+                            <th>Due Return</th>
+                            <th>Purpose</th>
+                            <th>Current State</th>
+                            <th class="text-end">Transition Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in borrowings %}
+                        <tr>
+                            <!-- Resource -->
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    <a href="/resources/view/{{ b.resource_id }}" class="text-decoration-none text-dark">
+                                        {{ b.resource_title }}
+                                    </a>
+                                </div>
+                                <small class="text-muted"><i class="bi bi-tag me-1"></i>{{ b.resource_category }}</small>
+                            </td>
+
+                            <!-- Borrower Student -->
+                            <td>
+                                <div class="fw-semibold text-dark">{{ b.user_name }}</div>
+                                <small class="text-muted">@{{ b.username }}</small>
+                            </td>
+
+                            <!-- Due Date -->
+                            <td>
+                                {% if b.is_overdue %}
+                                    <span class="badge bg-danger text-white">
+                                        <i class="bi bi-clock-history me-1"></i>{{ b.expected_return_date }} (OVERDUE)
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">{{ b.expected_return_date or 'N/A' }}</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Purpose -->
+                            <td class="text-secondary text-truncate" style="max-width: 180px;" title="{{ b.purpose }}">{{ b.purpose }}</td>
+
+                            <!-- Status -->
+                            <td>
+                                <span class="cs-badge cs-badge-{{ b.status }}">{{ b.status|upper }}</span>
+                            </td>
+
+                            <!-- State Machine Actions (Normal HTML Forms) -->
+                            <td class="text-end">
+                                {% if b.status == 'requested' %}
+                                    <form method="POST" action="{{ url_for('borrowings.update_borrowing_status', borrowing_id=b._id) }}" class="d-inline">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success py-1 px-2">
+                                            <i class="bi bi-check-lg me-1"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('borrowings.update_borrowing_status', borrowing_id=b._id) }}" class="d-inline ms-1">
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
+                                            <i class="bi bi-x-lg me-1"></i> Reject
+                                        </button>
+                                    </form>
+
+                                {% elif b.status == 'approved' %}
+                                    <form method="POST" action="{{ url_for('borrowings.update_borrowing_status', borrowing_id=b._id) }}" class="d-inline">
+                                        <input type="hidden" name="action" value="handover">
+                                        <button type="submit" class="btn btn-sm btn-primary py-1 px-2">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Confirm Handover
+                                        </button>
+                                    </form>
+
+                                {% elif b.status == 'borrowed' %}
+                                    <form method="POST" action="{{ url_for('borrowings.update_borrowing_status', borrowing_id=b._id) }}" class="d-inline">
+                                        <input type="hidden" name="action" value="return">
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">
+                                            <i class="bi bi-box-arrow-in-left me-1"></i> Confirm Return
+                                        </button>
+                                    </form>
+
+                                {% else %}
+                                    <span class="text-muted small">Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-arrow-left-right fs-1 text-secondary d-block mb-2"></i>
+                No active borrowing transactions requiring lab action.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

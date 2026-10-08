@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Directory – CAMPUSSHARE Admin{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-folder2-open text-primary me-2"></i>Campus Resource Catalog</h4>
+            <p class="text-secondary small mb-0">Total resources in database: {{ resources|length }}</p>
+        </div>
+        <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-cs-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add Resource
+        </a>
+    </div>
+
+    <div class="cs-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Resource Title</th>
+                        <th>Classification</th>
+                        <th>Category</th>
+                        <th>Dept &bull; Sem</th>
+                        <th>Current State</th>
+                        <th>Owner</th>
+                        <th class="text-end">Moderation Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in resources %}
+                    <tr>
+                        <!-- Title -->
+                        <td>
+                            <div class="fw-bold text-dark">
+                                <a href="/resources/view/{{ r._id }}" class="text-decoration-none text-dark">
+                                    {{ r.title }}
+                                </a>
+                            </div>
+                            <small class="text-muted">{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '' }}</small>
+                        </td>
+
+                        <!-- Type -->
+                        <td><span class="badge bg-light text-secondary border">{{ r.resource_type|upper }}</span></td>
+
+                        <!-- Category -->
+                        <td>{{ r.category }}</td>
+
+                        <!-- Department & Semester -->
+                        <td>{{ r.department }} &bull; Sem {{ r.semester }}</td>
+
+                        <!-- Status Badge -->
+                        <td>
+                            <span class="cs-badge cs-badge-{{ r.status }}">{{ r.status|upper }}</span>
+                        </td>
+
+                        <!-- Owner -->
+                        <td>{{ r.owner_name or 'Faculty/Student' }}</td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <!-- Status Toggle -->
+                                {% if r.status != 'approved' %}
+                                    <form method="POST" action="{{ url_for('admin.toggle_resource_status', resource_id=r._id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="approved">
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Approve Resource">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{{ url_for('admin.toggle_resource_status', resource_id=r._id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning py-1 px-2" title="Reject / Unpublish">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <!-- Delete -->
+                                <form method="POST" action="{{ url_for('admin.delete_resource_admin', resource_id=r._id) }}" 
+                                      onsubmit="return confirm('Purge this resource permanently?');" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete Resource">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 col-lg-5 text-center">
+        <div class="mb-4">
+            <span class="display-1 fw-bold text-primary">404</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">Resource or Page Not Found</h3>
+        <p class="text-secondary small mb-4">
+            The page or campus catalog item you are looking for does not exist, has been removed by platform moderation, or the URL address was typed incorrectly.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('resources.list_resources') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-collection me-1"></i> Browse Catalog
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-house me-1"></i> Go to Homepage
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

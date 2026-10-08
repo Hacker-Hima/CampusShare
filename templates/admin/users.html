@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}User Management – CAMPUSSHARE Admin{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Campus User Management</h4>
+            <p class="text-secondary small mb-0">Total registered institutional accounts: {{ users|length }}</p>
+        </div>
+    </div>
+
+    <div class="cs-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>User Identity</th>
+                        <th>College Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Account Status</th>
+                        <th class="text-end">Administrative Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <!-- Identity -->
+                        <td>
+                            <div class="fw-bold text-dark">{{ u.full_name }}</div>
+                            <small class="text-muted">@{{ u.username }}</small>
+                        </td>
+
+                        <!-- Email -->
+                        <td class="text-secondary">{{ u.email }}</td>
+
+                        <!-- Role Badge & Change Role Form -->
+                        <td>
+                            <span class="cs-badge-role cs-badge-{{ u.role }} d-inline-block mb-1">{{ u.role|upper }}</span>
+                            {% if u.username != 'admin' %}
+                                <form method="POST" action="{{ url_for('admin.change_user_role', user_id=u._id) }}" class="d-flex gap-1 align-items-center mt-1">
+                                    <select name="role" class="form-select form-select-sm" style="font-size: 0.75rem; width: 95px;">
+                                        <option value="student" {% if u.role == 'student' %}selected{% endif %}>Student</option>
+                                        <option value="faculty" {% if u.role == 'faculty' %}selected{% endif %}>Faculty</option>
+                                        <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Update Role" style="font-size: 0.75rem;">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+
+                        <!-- Department -->
+                        <td>{{ u.department or 'N/A' }}</td>
+
+                        <!-- Status Badge -->
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success-subtle text-success border">ACTIVE</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border">SUSPENDED</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Verification & Trust Status -->
+                        <td>
+                            {% if u.is_verified %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle mb-1">
+                                    <i class="bi bi-patch-check-fill me-1"></i>VERIFIED
+                                </span>
+                            {% elif u.verification_status == 'pending_verification' %}
+                                <span class="badge bg-warning text-dark mb-1">PENDING APPROVAL</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary mb-1">UNVERIFIED</span>
+                            {% endif %}
+                            <div class="small text-muted" style="font-size: 0.75rem;">Trust: {{ u.trust_score or 75 }}/100</div>
+                        </td>
+
+                        <!-- Action Buttons (Normal HTML Forms) -->
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1">
+                                {% if not u.is_verified and u.username != 'admin' %}
+                                    <form method="POST" action="{{ url_for('admin.verify_user', user_id=u._id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-success btn-sm py-1 px-2" title="Verify User Credentials">
+                                            <i class="bi bi-patch-check"></i> Verify
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <a href="{{ url_for('profile.public_profile', target_user_id=u._id) }}" class="btn btn-outline-secondary btn-sm py-1 px-2" title="View Profile">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                {% if u.username != 'admin' %}
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u._id) }}" class="d-inline">
+                                        {% if u.is_active %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Deactivate / Suspend User">
+                                                <i class="bi bi-person-x"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-outline-success btn-sm py-1 px-2" title="Activate Account">
+                                                <i class="bi bi-person-check"></i>
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

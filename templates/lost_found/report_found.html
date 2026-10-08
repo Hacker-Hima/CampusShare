@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Report Found Item – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-2"></i>Report a Found Item</h4>
+            <p class="text-secondary small mb-0">Help a classmate recover their lost possession. Earn +10 campus contribution points!</p>
+        </div>
+        <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Board
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cs-card">
+                <form method="POST" action="{{ url_for('lost_found.report_found') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Item Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Wireless Earbuds in Blue Case, Casio Calculator, College ID Card..." required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">Select Category...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Date Found</label>
+                            <input type="date" name="incident_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Location Found <span class="text-danger">*</span></label>
+                        <input type="text" name="location" class="form-control" placeholder="e.g. Cafeteria Table 14, Main Auditorium Row 3, ECE Lab..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Current Storage Location / Handover Point <span class="text-danger">*</span></label>
+                        <input type="text" name="storage_location" class="form-control" placeholder="e.g. Deposited at Main Security Desk, Room 304 Reception, Contact me directly" required>
+                        <div class="form-text" style="font-size: 0.75rem;">Where the rightful owner can safely collect it after verifying ownership.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Description</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="General description of the item found. Avoid mentioning confidential details (like wallet cash amount or passwords) so the owner can verify ownership."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-dark">Upload Photo (Optional)</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-success btn-sm px-4">
+                            <i class="bi bi-shield-check me-1"></i> Post Found Item (+10 pts)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

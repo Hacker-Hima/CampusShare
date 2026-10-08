@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} – Campus Marketplace{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('marketplace.list_items') }}" class="text-decoration-none">Marketplace</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('marketplace.list_items', category=item.category) }}" class="text-decoration-none">{{ item.category }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ item.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Item Details -->
+        <div class="col-lg-8">
+            <div class="cs-card mb-4">
+                <!-- Status & Title -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-light text-secondary border me-2">{{ item.category }}</span>
+                        {% if item.is_free or item.price == 0 %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Free Giveaway</span>
+                        {% endif %}
+                        {% if item.accept_exchange %}
+                            <span class="badge bg-info-subtle text-info border border-info-subtle">Open for Exchange</span>
+                        {% endif %}
+                        {% if item.status == 'reserved' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Reserved</span>
+                        {% elif item.status == 'sold' %}
+                            <span class="badge bg-secondary text-white">Sold / Completed</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Wishlist Toggle Form (Pure HTTP POST) -->
+                    {% if session.get('user_id') %}
+                        <form method="POST" action="{{ url_for('marketplace.toggle_wishlist', item_id=item._id) }}">
+                            <button type="submit" class="btn btn-sm {% if is_wishlisted %}btn-danger{% else %}btn-outline-danger{% endif %}" title="Save to Wishlist">
+                                <i class="bi bi-heart{% if is_wishlisted %}-fill{% endif %} me-1"></i>
+                                {% if is_wishlisted %}Saved{% else %}Wishlist{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <h3 class="fw-bold text-dark mb-3">{{ item.title }}</h3>
+
+                <!-- Price Highlight -->
+                <div class="p-3 rounded bg-light border mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Listing Price</div>
+                        <div class="display-6 fw-bold {% if item.is_free or item.price == 0 %}text-success{% else %}text-primary{% endif %}">
+                            {% if item.is_free or item.price == 0 %}
+                                ₹0 <span class="fs-6 fw-normal text-muted">(Free Giveaway)</span>
+                            {% else %}
+                                ₹{{ item.price|int }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2">
+                            Condition: <strong>{{ item.condition }}</strong>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-2">Item Description</h5>
+                    <p class="text-secondary" style="white-space: pre-line;">{{ item.description or 'No extra description provided by seller.' }}</p>
+                </div>
+
+                <!-- Key Meta Details -->
+                <div class="row g-3 py-3 border-top border-bottom mb-4 text-muted small">
+                    <div class="col-sm-4">
+                        <i class="bi bi-geo-alt text-danger me-1"></i> <strong>Location:</strong> {{ item.location }}
+                    </div>
+                    <div class="col-sm-4">
+                        <i class="bi bi-clock-history me-1"></i> <strong>Posted:</strong> {{ item.created_at.strftime('%d %b %Y') if item.created_at else 'Recent' }}
+                    </div>
+                    <div class="col-sm-4">
+                        <i class="bi bi-eye me-1"></i> <strong>Total Views:</strong> {{ item.views or 1 }}
+                    </div>
+                </div>
+
+                <!-- Actions: Make an Offer Form (For Non-Sellers) -->
+                {% if session.get('user_id') and session.get('user_id') != item.seller_id and item.status != 'sold' %}
+                    <div class="p-3 rounded bg-white border border-primary-subtle mt-4">
+                        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-tag-fill text-primary me-2"></i>Negotiate or Make an Offer</h5>
+                        <p class="text-muted small mb-3">Submit your proposed price or an exchange inquiry directly to {{ item.seller_name }}.</p>
+                        
+                        <form method="POST" action="{{ url_for('marketplace.submit_offer', item_id=item._id) }}">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-sm-4">
+                                    <label class="form-label small fw-semibold text-secondary">Your Offer Price (₹)</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" name="offered_price" class="form-control" value="{{ item.price|int }}" min="0" required>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <label class="form-label small fw-semibold text-secondary">Message / Proposed Meetup Location</label>
+                                    <input type="text" name="message" class="form-control form-control-sm" placeholder="Can collect today afternoon at {{ item.location }}..." required>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <button type="submit" class="btn btn-cs-primary btn-sm px-4">
+                                        <i class="bi bi-send-fill me-1"></i> Send Offer to Seller
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% elif session.get('user_id') == item.seller_id %}
+                    <div class="p-3 rounded bg-light border mt-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary text-white mb-1">Your Listing</span>
+                            <div class="small text-secondary">Manage your listing status or mark as completed when handed over.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            {% if item.status != 'sold' %}
+                                <form method="POST" action="{{ url_for('marketplace.mark_sold', item_id=item._id) }}">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check2-all me-1"></i> Mark as Sold (+10 pts)
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{{ url_for('marketplace.my_listings') }}" class="btn btn-outline-secondary btn-sm">
+                                Manage Listings
+                            </a>
+                        </div>
+                    </div>
+                {% elif not session.get('user_id') and item.status != 'sold' %}
+                    <div class="p-3 rounded bg-light border border-secondary-subtle mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+                        <div>
+                            <strong class="d-block text-dark"><i class="bi bi-info-circle text-primary me-1"></i>Interested in this item?</strong>
+                            <span class="text-muted small">Sign in with your campus account to make an offer or negotiate with {{ item.seller_name }}.</span>
+                        </div>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-cs-primary btn-sm px-4 text-nowrap rounded-pill">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Moderation Flag -->
+                {% if session.get('user_id') and session.get('user_id') != item.seller_id %}
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <details class="d-inline-block text-start">
+                            <summary class="text-danger small cursor-pointer" style="cursor: pointer;">
+                                <i class="bi bi-flag me-1"></i> Report this listing to administration
+                            </summary>
+                            <form method="POST" action="{{ url_for('reports.report_marketplace_item', item_id=item._id) }}" class="p-3 mt-2 bg-light border rounded">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold">Reason for Report</label>
+                                    <select name="reason" class="form-select form-select-sm">
+                                        <option value="Fake / Fraudulent listing">Fake / Fraudulent listing</option>
+                                        <option value="Wrong campus location">Wrong campus location</option>
+                                        <option value="Inappropriate content">Inappropriate content</option>
+                                        <option value="Spam / Duplicate">Spam / Duplicate</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold">Details</label>
+                                    <textarea name="details" class="form-control form-control-sm" rows="2" placeholder="Explain the issue..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-sm">Submit Moderation Flag</button>
+                            </form>
+                        </details>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar: Seller Reputation Card & Direct Message -->
+        <div class="col-lg-4">
+            <!-- Seller Profile & Trust Score Widget -->
+            <div class="cs-card mb-4 text-center">
+                <div class="mx-auto mb-3" style="width: 70px; height: 70px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #3730a3;">
+                    <i class="bi bi-person"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-0">
+                    <a href="{{ url_for('profile.public_profile', target_user_id=item.seller_id) }}" class="text-decoration-none text-dark">
+                        {{ item.seller_name }}
+                    </a>
+                </h5>
+                <span class="text-muted small">@{{ item.seller_username }} &bull; {{ item.seller_dept }} Department</span>
+
+                <!-- Trust Score Meter -->
+                <div class="p-3 my-3 rounded bg-light border text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-dark"><i class="bi bi-shield-check text-success me-1"></i>Campus Trust Score</span>
+                        <span class="fw-bold text-success">{{ seller_trust_score }}/100</span>
+                    </div>
+                    {% set bar_color = 'bg-success' if (seller_trust_score or 0) >= 80 else ('bg-primary' if (seller_trust_score or 0) >= 60 else 'bg-warning') %}
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar {{ bar_color }}" 
+                             role="progressbar" style="width: {{ seller_trust_score }}%;" aria-valuenow="{{ seller_trust_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span><i class="bi bi-star-fill text-warning me-1"></i>{{ seller_avg_rating }}/5.0 ({{ seller_review_count }} reviews)</span>
+                        <span>{% if seller and seller.is_verified %}<span class="text-primary fw-semibold">✓ Verified Student</span>{% endif %}</span>
+                    </div>
+                </div>
+
+                <!-- Badges -->
+                {% if seller_badges %}
+                    <div class="d-flex flex-wrap gap-1 justify-content-center mb-3">
+                        {% for badge in seller_badges %}
+                            <span class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border border-{{ badge.color }}-subtle small" title="{{ badge.desc }}">
+                                <i class="bi {{ badge.icon }} me-1"></i>{{ badge.name }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Direct Message Link (Server-Rendered) -->
+                {% if session.get('user_id') and session.get('user_id') != item.seller_id %}
+                    <a href="{{ url_for('messages.start_conversation', to_user_id=item.seller_id, item_title=item.title, context_type='marketplace') }}" class="btn btn-cs-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Message Seller
+                    </a>
+                {% elif not session.get('user_id') %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-chat-dots me-1"></i> Sign In to Message Seller
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('profile.public_profile', target_user_id=item.seller_id) }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-person-badge me-1"></i> View Full Reputation Profile
+                </a>
+            </div>
+
+            <!-- Existing Offers on this item (if any) -->
+            {% if user_offers %}
+                <div class="cs-card">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-cash-coin me-2 text-primary"></i>Active Offers on This Item</h6>
+                    <div class="list-group list-group-flush small">
+                        {% for off in user_offers %}
+                            <div class="list-group-item px-0 py-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-semibold">₹{{ off.offered_price|int }} by {{ off.buyer_name }}</span>
+                                    <span class="badge bg-{% if off.status == 'accepted' %}success{% elif off.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                        {{ off.status|upper }}
+                                    </span>
+                                </div>
+                                <div class="text-muted mt-1">"{{ off.message }}"</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

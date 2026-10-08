@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ resource.title }} – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-9">
+        <div class="cs-card p-4">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="cs-stat-icon amber">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-1">Edit Resource</h4>
+                    <p class="text-secondary small mb-0">Update metadata, tags, or file attachment for "{{ resource.title }}"</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('resources.edit_resource', resource_id=resource._id) }}" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <!-- Title -->
+                    <div class="col-12">
+                        <label for="title" class="form-label small fw-semibold text-secondary">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ resource.title }}" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Category</label>
+                        <select class="form-select" name="category" required>
+                            {% for c in categories %}
+                                <option value="{{ c.name }}" {% if resource.category == c.name %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Availability Status</label>
+                        <select class="form-select" name="availability" required>
+                            <option value="available" {% if resource.availability == 'available' %}selected{% endif %}>Available</option>
+                            <option value="borrowed" {% if resource.availability == 'borrowed' %}selected{% endif %}>Borrowed / In-Use</option>
+                            <option value="reserved" {% if resource.availability == 'reserved' %}selected{% endif %}>Reserved</option>
+                            <option value="unavailable" {% if resource.availability == 'unavailable' %}selected{% endif %}>Unavailable / Under Maintenance</option>
+                        </select>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="col-md-6">
+                        <label for="department" class="form-label small fw-semibold text-secondary">Department</label>
+                        <select class="form-select" id="department" name="department" required>
+                            <option value="CSE" {% if resource.department == 'CSE' %}selected{% endif %}>CSE</option>
+                            <option value="ECE" {% if resource.department == 'ECE' %}selected{% endif %}>ECE</option>
+                            <option value="IT" {% if resource.department == 'IT' %}selected{% endif %}>IT</option>
+                            <option value="MECH" {% if resource.department == 'MECH' %}selected{% endif %}>MECH</option>
+                            <option value="CIVIL" {% if resource.department == 'CIVIL' %}selected{% endif %}>CIVIL</option>
+                            <option value="EEE" {% if resource.department == 'EEE' %}selected{% endif %}>EEE</option>
+                            <option value="BASIC SCIENCES" {% if resource.department == 'BASIC SCIENCES' %}selected{% endif %}>Basic Sciences</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester -->
+                    <div class="col-md-3">
+                        <label for="semester" class="form-label small fw-semibold text-secondary">Semester</label>
+                        <select class="form-select" id="semester" name="semester">
+                            <option value="All" {% if resource.semester == 'All' %}selected{% endif %}>All</option>
+                            {% for s in ['1', '2', '3', '4', '5', '6', '7', '8'] %}
+                                <option value="{{ s }}" {% if resource.semester == s %}selected{% endif %}>Sem {{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="col-md-3">
+                        <label for="subject" class="form-label small fw-semibold text-secondary">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" value="{{ resource.subject }}">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label for="description" class="form-label small fw-semibold text-secondary">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ resource.description }}</textarea>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-6">
+                        <label for="location" class="form-label small fw-semibold text-secondary">Location / Room</label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ resource.location or '' }}">
+                    </div>
+
+                    <!-- Replace File -->
+                    <div class="col-md-6">
+                        <label for="resource_file" class="form-label small fw-semibold text-secondary">Replace Attached File</label>
+                        <input type="file" class="form-control" id="resource_file" name="resource_file">
+                        {% if resource.file_name %}
+                            <small class="text-muted">Current file: {{ resource.file_name }}</small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="col-12">
+                        <label for="tags" class="form-label small fw-semibold text-secondary">Tags (Comma-separated)</label>
+                        <input type="text" class="form-control" id="tags" name="tags" value="{{ resource.tags|join(', ') if resource.tags else '' }}">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{{ url_for('resources.view_resource', resource_id=resource._id) }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-cs-primary px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

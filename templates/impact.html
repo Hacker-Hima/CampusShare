@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Impact &amp; Sustainability – CAMPUSSHARE 2.0{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Hero Impact Banner -->
+    <div class="p-5 mb-4 rounded-3 bg-white border shadow-sm">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 mb-3">
+                    <i class="bi bi-recycle me-1"></i> Sustainable Campus Ecosystem
+                </span>
+                <h2 class="display-6 fw-bold text-dark mb-3">
+                    Campus Resource Reuse &amp; Economic Impact
+                </h2>
+                <p class="lead text-secondary fs-6 mb-4">
+                    By sharing syllabus notes, recirculating hardware kits, and passing down second-hand calculators and textbooks, the campus community reduces educational waste and saves money together.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-cs-primary btn-sm px-3">
+                        <i class="bi bi-shop me-1"></i> Browse Marketplace
+                    </a>
+                    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-primary btn-sm px-3">
+                        <i class="bi bi-collection me-1"></i> Library Notes
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="p-4 rounded bg-success-subtle bg-opacity-25 border border-success-subtle">
+                    <i class="bi bi-tree-fill text-success display-3 mb-2 d-block"></i>
+                    <h5 class="fw-bold text-success mb-1">Eco-Friendly Campus</h5>
+                    <p class="text-secondary small mb-0">Every shared resource prevents unnecessary packaging, paper printing, and e-waste.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Impact Metric Pillars -->
+    <div class="row g-3 mb-5">
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card text-center p-4 h-100 mb-0">
+                <div class="mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #1d4ed8;">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <div class="display-6 fw-bold text-dark mb-1">{{ impact.reused }}</div>
+                <div class="text-muted small text-uppercase fw-semibold">Resources Reused</div>
+                <div class="text-secondary small mt-2" style="font-size: 0.75rem;">Digital notes downloaded &amp; physical equipment circulated</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card text-center p-4 h-100 mb-0">
+                <div class="mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; background: #f0fdf4; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #15803d;">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="display-6 fw-bold text-dark mb-1">{{ impact.exchanges }}</div>
+                <div class="text-muted small text-uppercase fw-semibold">Successful Exchanges</div>
+                <div class="text-secondary small mt-2" style="font-size: 0.75rem;">Peer-to-peer handovers, loans, &amp; fulfilled requests</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card text-center p-4 h-100 mb-0">
+                <div class="mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; background: #fefce8; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #b45309;">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="display-6 fw-bold text-success mb-1">₹{{ "{:,}".format(impact.savings) }}</div>
+                <div class="text-muted small text-uppercase fw-semibold">Estimated Student Savings</div>
+                <div class="text-secondary small mt-2" style="font-size: 0.75rem;">Money saved by students avoiding new retail purchases</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="cs-card text-center p-4 h-100 mb-0">
+                <div class="mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; background: #faf5ff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #7e22ce;">
+                    <i class="bi bi-recycle"></i>
+                </div>
+                <div class="display-6 fw-bold text-dark mb-1">{{ impact.circulation }}</div>
+                <div class="text-muted small text-uppercase fw-semibold">Items in Circulation</div>
+                <div class="text-secondary small mt-2" style="font-size: 0.75rem;">Physical hardware and marketplace items currently active</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Contributors Leaderboard -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="cs-card mb-0">
+                <div class="cs-card-header">
+                    <div>
+                        <h5 class="cs-card-title mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i>Campus Contribution Champions</h5>
+                        <small class="text-muted">Top students earning recognition badges and points through academic sharing</small>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Rank</th>
+                                <th>Student</th>
+                                <th>Department</th>
+                                <th>Trust Score</th>
+                                <th>Contribution Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in top_users %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{% if loop.index == 1 %}warning text-dark{% elif loop.index == 2 %}secondary text-white{% elif loop.index == 3 %}info text-white{% else %}light text-dark border{% endif %} rounded-circle p-2" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                                            {{ loop.index }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('profile.public_profile', target_user_id=u._id) }}" class="fw-bold text-dark text-decoration-none">
+                                            {{ u.full_name }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">@{{ u.username }}</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-secondary border">{{ u.department }}</span></td>
+                                    <td>
+                                        <span class="text-success fw-bold"><i class="bi bi-shield-check me-1"></i>{{ u.trust_score or 85 }}/100</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold fs-6">
+                                            {{ u.points or 15 }} pts
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cs-card">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-star-fill text-warning me-2"></i>How to Earn Badges</h5>
+                <div class="list-group list-group-flush small">
+                    <div class="list-group-item px-0 py-2">
+                        <strong class="text-dark">Upload Useful Resource</strong>
+                        <div class="text-muted">+10 Contribution Points</div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <strong class="text-dark">Complete Marketplace Transaction</strong>
+                        <div class="text-muted">+10 Contribution Points</div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <strong class="text-dark">Fulfill a Wanted Board Request</strong>
+                        <div class="text-muted">+15 Contribution Points</div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <strong class="text-dark">Return Borrowed Item On-Time</strong>
+                        <div class="text-muted">+5 Contribution Points</div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <strong class="text-dark">Receive 4+ Star Peer Review</strong>
+                        <div class="text-muted">+5 Contribution Points</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

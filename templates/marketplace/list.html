@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Marketplace – Buy, Sell &amp; Exchange Resources{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-shop text-primary me-2"></i>Campus Marketplace</h3>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Student-to-Student</span>
+            </div>
+            <p class="text-secondary small mb-0 mt-1">Affordable second-hand calculators, project kits, bicycles, books, and free academic giveaways.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('marketplace.create_item') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Post Listing
+            </a>
+            <a href="{{ url_for('marketplace.my_listings') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-tag me-1"></i> My Listings
+            </a>
+            <a href="{{ url_for('marketplace.manage_offers') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-cash-coin me-1"></i> Offers
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stat Overview Bar -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon blue" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-box-seam"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.total }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Active Listings</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon green" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-gift-fill"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.free }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Free Giveaways (₹0)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon purple" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-arrow-repeat"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.exchange }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Open for Exchange</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls (Standard HTTP GET Form) -->
+    <div class="cs-card mb-4">
+        <form method="GET" action="{{ url_for('marketplace.list_items') }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary">Search Listings</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Calculator, Arduino, Cycle..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-secondary">Category</label>
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if current_filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-secondary">Condition</label>
+                <select name="condition" class="form-select form-select-sm">
+                    <option value="">Any Condition</option>
+                    {% for cond in conditions %}
+                        <option value="{{ cond }}" {% if current_filters.condition == cond %}selected{% endif %}>{{ cond }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-secondary">Sort By</label>
+                <select name="sort" class="form-select form-select-sm">
+                    <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="price_asc" {% if current_filters.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if current_filters.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="views" {% if current_filters.sort == 'views' %}selected{% endif %}>Most Popular</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-cs-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                </button>
+                <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top d-flex gap-3 small">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="free" value="1" id="filterFree" {% if current_filters.free %}checked{% endif %}>
+                    <label class="form-check-label text-success fw-medium" for="filterFree">
+                        <i class="bi bi-gift me-1"></i> Free Items Only
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="exchange" value="1" id="filterExchange" {% if current_filters.exchange %}checked{% endif %}>
+                    <label class="form-check-label text-primary fw-medium" for="filterExchange">
+                        <i class="bi bi-arrow-repeat me-1"></i> Open for Exchange
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Listings Grid -->
+    {% if items %}
+        <div class="row g-4">
+            {% for item in items %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="cs-card h-100 mb-0 d-flex flex-column justify-content-between position-relative">
+                        <div>
+                            <!-- Header / Category Pill & Price -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-light text-secondary border small">{{ item.category }}</span>
+                                <div>
+                                    {% if item.is_free or item.price == 0 %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-6 fw-bold">FREE</span>
+                                    {% else %}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 fw-bold">₹{{ item.price|int }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Title -->
+                            <h5 class="fw-bold text-dark mb-2">
+                                <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="text-decoration-none text-dark">
+                                    {{ item.title }}
+                                </a>
+                            </h5>
+
+                            <!-- Description Snippet -->
+                            <p class="text-secondary small mb-3 text-truncate" style="max-height: 40px;">
+                                {{ item.description or 'No additional description provided.' }}
+                            </p>
+
+                            <!-- Tags: Condition, Exchange, Location -->
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                <span class="badge bg-secondary-subtle text-secondary small">
+                                    <i class="bi bi-check2-circle me-1"></i>{{ item.condition }}
+                                </span>
+                                {% if item.accept_exchange %}
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle small">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Exchange
+                                    </span>
+                                {% endif %}
+                                {% if item.status == 'reserved' %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle small">
+                                        <i class="bi bi-hourglass-split me-1"></i>Reserved
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Footer: Seller & Location -->
+                        <div class="pt-2 border-top mt-auto">
+                            <div class="d-flex justify-content-between align-items-center small text-muted mb-2">
+                                <span><i class="bi bi-geo-alt me-1 text-danger"></i>{{ item.location }}</span>
+                                <span><i class="bi bi-eye me-1"></i>{{ item.views or 0 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small">
+                                    <span class="text-secondary">Seller:</span>
+                                    <a href="{{ url_for('profile.public_profile', target_user_id=item.seller_id) }}" class="text-decoration-none fw-medium text-dark">
+                                        {{ item.seller_name }}
+                                    </a>
+                                </div>
+                                <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="btn btn-outline-primary btn-sm">
+                                    Details <i class="bi bi-chevron-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="cs-card text-center py-5">
+            <i class="bi bi-search text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark">No Marketplace Listings Found</h5>
+            <p class="text-muted small mb-3">Try adjusting your filters, searching for another keyword, or post a new listing.</p>
+            <a href="{{ url_for('marketplace.create_item') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Post the First Item
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

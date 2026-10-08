@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction Disputes Resolution – CAMPUSSHARE Administration{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Campus Transaction Disputes</h4>
+            <p class="text-secondary small mb-0">Review escalated student complaints regarding marketplace handovers and hardware condition disputes.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="cs-card p-0">
+        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark small text-uppercase">Dispute Records</span>
+            <span class="badge bg-white text-secondary border">{{ disputes|length }} Total</span>
+        </div>
+
+        {% if disputes %}
+            <div class="list-group list-group-flush">
+                {% for d in disputes %}
+                    <div class="list-group-item p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-{% if d.status == 'RESOLVED' %}success{% elif d.status == 'REJECTED' %}secondary{% else %}danger{% endif %} text-white me-2">
+                                    {{ d.status }}
+                                </span>
+                                <strong class="text-dark">{{ d.reason }}</strong>
+                                <span class="badge bg-light text-secondary border ms-1">{{ d.transaction_type|upper }}</span>
+                            </div>
+                            <span class="text-muted small">{{ d.created_at.strftime('%d %b %Y, %H:%M') if d.created_at else '' }}</span>
+                        </div>
+
+                        <p class="text-secondary small mb-2 bg-light p-2 rounded border">
+                            <strong>Complainant ({{ d.complainant_name }}):</strong> "{{ d.details }}"
+                        </p>
+
+                        {% if d.admin_resolution %}
+                            <div class="small text-success mb-2">
+                                <strong>Admin Decision:</strong> {{ d.admin_resolution }}
+                            </div>
+                        {% endif %}
+
+                        {% if d.status in ['OPEN', 'UNDER REVIEW'] %}
+                            <form method="POST" action="{{ url_for('admin.resolve_dispute', dispute_id=d._id) }}" class="mt-2 pt-2 border-top">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-6">
+                                        <input type="text" name="admin_resolution" class="form-control form-control-sm" placeholder="Resolution notes (e.g. 'Both parties refunded, trust score penalty applied')..." required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="status" class="form-select form-select-sm">
+                                            <option value="RESOLVED">Resolve Dispute (RESOLVED)</option>
+                                            <option value="REJECTED">Dismiss Dispute (REJECTED)</option>
+                                            <option value="UNDER REVIEW">Mark Under Review</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-cs-primary btn-sm w-100">
+                                            <i class="bi bi-check2-circle me-1"></i> Apply Decision
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted small py-4 mb-0 text-center">No transaction disputes open on CampusShare.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

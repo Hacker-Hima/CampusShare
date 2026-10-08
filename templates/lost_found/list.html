@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Lost &amp; Found – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-compass text-primary me-2"></i>Campus Lost &amp; Found</h3>
+                <span class="badge bg-secondary-subtle text-secondary border">Campus Utility</span>
+            </div>
+            <p class="text-secondary small mb-0 mt-1">Report misplaced student possessions, claim recovered calculators and electronics, and return found items.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('lost_found.report_lost') }}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-exclamation-octagon me-1"></i> Report Lost Item
+            </a>
+            <a href="{{ url_for('lost_found.report_found') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-shield-check me-1"></i> Report Found Item (+10 pts)
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Metrics Bar -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon red" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-question-diamond"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.lost }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Currently Missing</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon green" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-box2-heart"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.found }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Found &amp; In Custody</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="cs-stat-card py-2 px-3">
+                <div class="cs-stat-icon blue" style="width:38px; height:38px; font-size:1.1rem;"><i class="bi bi-check-all"></i></div>
+                <div>
+                    <div class="fw-bold fs-5 text-dark">{{ stats.recovered }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size:0.7rem;">Safely Recovered</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar (Pure HTTP GET Form) -->
+    <div class="cs-card mb-4">
+        <form method="GET" action="{{ url_for('lost_found.list_items') }}" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-secondary">Search Lost &amp; Found</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Casio calculator, Earbuds, ID card, Keys..." value="{{ current_filters.q }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary">Status Filter</label>
+                <select name="type" class="form-select form-select-sm">
+                    <option value="all" {% if current_filters.type == 'all' %}selected{% endif %}>All Incident Reports</option>
+                    <option value="lost" {% if current_filters.type == 'lost' %}selected{% endif %}>Missing Items Only</option>
+                    <option value="found" {% if current_filters.type == 'found' %}selected{% endif %}>Found Items Only</option>
+                    <option value="recovered" {% if current_filters.type == 'recovered' %}selected{% endif %}>Recovered / Claimed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary">Category</label>
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if current_filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-cs-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill me-1"></i> Filter
+                </button>
+                <a href="{{ url_for('lost_found.list_items') }}" class="btn btn-outline-secondary btn-sm" title="Reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Items Grid -->
+    {% if items %}
+        <div class="row g-4">
+            {% for item in items %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="cs-card h-100 mb-0 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-{% if item.item_type == 'lost' %}danger{% elif item.status == 'recovered' %}secondary{% else %}success{% endif %}-subtle text-{% if item.item_type == 'lost' %}danger{% elif item.status == 'recovered' %}secondary{% else %}success{% endif %} border fw-bold text-uppercase" style="font-size:0.75rem;">
+                                    {% if item.status == 'recovered' %}
+                                        ✓ Recovered
+                                    {% else %}
+                                        {{ item.item_type|upper }}
+                                    {% endif %}
+                                </span>
+                                <span class="badge bg-light text-secondary border small">{{ item.category }}</span>
+                            </div>
+
+                            <h5 class="fw-bold text-dark mb-2">
+                                <a href="{{ url_for('lost_found.view_item', item_id=item._id) }}" class="text-decoration-none text-dark">
+                                    {{ item.title }}
+                                </a>
+                            </h5>
+
+                            <p class="text-secondary small mb-3 text-truncate">{{ item.description or 'No extra description.' }}</p>
+
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-geo-alt me-1 text-danger"></i> <strong>Location:</strong> {{ item.location }}
+                            </div>
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-calendar3 me-1"></i> <strong>Date:</strong> {{ item.incident_date or 'Recent' }}
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-top mt-auto d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">By {{ item.reporter_name }}</span>
+                            <a href="{{ url_for('lost_found.view_item', item_id=item._id) }}" class="btn btn-outline-primary btn-sm">
+                                View &amp; Claim <i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="cs-card text-center py-5">
+            <i class="bi bi-compass text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark">No Lost or Found Reports</h5>
+            <p class="text-muted small mb-3">No matching possessions reported under this filter.</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ url_for('lost_found.report_lost') }}" class="btn btn-outline-danger btn-sm">Report Lost Item</a>
+                <a href="{{ url_for('lost_found.report_found') }}" class="btn btn-success btn-sm">Report Found Item</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

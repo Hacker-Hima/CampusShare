@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Requests – CAMPUSSHARE Community{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Campus Material Requests</h3>
+            <p class="text-secondary small mb-0">Help fellow students and colleagues by fulfilling missing syllabus materials and equipment</p>
+        </div>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('requests.create_request') }}" class="btn btn-cs-primary btn-sm mt-3 mt-md-0">
+                <i class="bi bi-patch-question me-1"></i> Request a Resource
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Filter Tabs (Normal HTML Links - No JavaScript) -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ url_for('requests.list_requests') }}" 
+           class="btn btn-sm {% if filter_type == 'all' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            All Requests ({{ stats.total }})
+        </a>
+        <a href="{{ url_for('requests.list_requests', filter='pending') }}" 
+           class="btn btn-sm {% if filter_type == 'pending' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi bi-hourglass-split me-1"></i> Open &amp; Pending ({{ stats.pending }})
+        </a>
+        <a href="{{ url_for('requests.list_requests', filter='fulfilled') }}" 
+           class="btn btn-sm {% if filter_type == 'fulfilled' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi bi-check-circle me-1"></i> Fulfilled ({{ stats.fulfilled }})
+        </a>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('requests.list_requests', filter='my') }}" 
+               class="btn btn-sm {% if filter_type == 'my' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+                <i class="bi bi-person me-1"></i> My Requests ({{ stats.my }})
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Requests Feed Table -->
+    <div class="cs-card">
+        {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Resource Needed</th>
+                            <th>Category &amp; Scope</th>
+                            <th>Requested By</th>
+                            <th>Needed By</th>
+                            <th>Status</th>
+                            {% if session.get('role') in ['faculty', 'admin'] or filter_type == 'my' %}
+                                <th class="text-end">Action</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests %}
+                        <tr>
+                            <!-- Resource Name & Description -->
+                            <td style="max-width: 280px;">
+                                <a href="{{ url_for('requests.view_request', request_id=r._id) }}" class="fw-bold text-dark text-decoration-none">
+                                    {{ r.resource_name }}
+                                </a>
+                                <p class="text-secondary small mb-0 text-truncate" title="{{ r.description }}">{{ r.description }}</p>
+                                {% if r.response_note %}
+                                    <div class="mt-1 small text-success bg-success-subtle p-1 px-2 rounded border border-success-subtle">
+                                        <i class="bi bi-chat-quote-fill me-1"></i>
+                                        <strong>{{ r.fulfiller_name or r.fulfilled_by or 'Faculty' }}:</strong> {{ r.response_note }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Category & Department -->
+                            <td>
+                                <span class="badge bg-light text-primary border mb-1">{{ r.category }}</span>
+                                <div class="text-muted small">{{ r.department }} &bull; Sem {{ r.semester }}</div>
+                            </td>
+
+                            <!-- Requester -->
+                            <td>
+                                <div class="fw-semibold text-dark">{{ r.user_name }}</div>
+                                <small class="text-muted">@{{ r.username }}</small>
+                            </td>
+
+                            <!-- Date Needed -->
+                            <td class="text-secondary">
+                                <i class="bi bi-calendar-event me-1"></i>{{ r.required_date or 'Flexible' }}
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td>
+                                <span class="cs-badge cs-badge-{{ r.status }}">{{ r.status|upper }}</span>
+                            </td>
+
+                            <!-- Actions for Faculty/Admin or Owner -->
+                            {% if session.get('role') in ['faculty', 'admin'] or session.get('user_id') == r.user_id %}
+                            <td class="text-end">
+                                <!-- Faculty / Admin Resolution Dropdown/Form -->
+                                {% if session.get('role') in ['faculty', 'admin'] and r.status in ['pending', 'accepted'] %}
+                                    <form method="POST" action="{{ url_for('requests.update_status', request_id=r._id) }}" class="d-inline-flex gap-1 align-items-center">
+                                        <input type="text" name="response_note" class="form-control form-control-sm" placeholder="Add note / URL..." style="width: 140px;" required>
+                                        <select name="status" class="form-select form-select-sm" style="width: 100px;">
+                                            <option value="fulfilled">Fulfill</option>
+                                            <option value="accepted">Accept</option>
+                                            <option value="rejected">Reject</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-cs-primary py-1 px-2" title="Resolve">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <!-- Student Cancel Action -->
+                                {% if session.get('user_id') == r.user_id and r.status == 'pending' %}
+                                    <form method="POST" action="{{ url_for('requests.cancel_request', request_id=r._id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Cancel Request">
+                                            <i class="bi bi-x-circle me-1"></i> Cancel
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-inbox fs-1 text-secondary d-block mb-2"></i>
+                No resource requests found under this filter.
+                {% if session.get('user_id') %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('requests.create_request') }}" class="btn btn-cs-primary btn-sm">Submit New Request</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

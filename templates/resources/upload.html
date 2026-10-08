@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Contribute Resource – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-9">
+        <div class="cs-card p-4">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="cs-stat-icon blue">
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-1">Contribute Campus Resource</h4>
+                    <p class="text-secondary small mb-0">Share lecture notes, question papers, project hardware, or campus facilities</p>
+                </div>
+            </div>
+
+            <!-- Standard HTML multipart form for file uploading (No JavaScript) -->
+            <form method="POST" action="{{ url_for('resources.upload_resource') }}" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <!-- Resource Type -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Resource Classification Tier</label>
+                        <select class="form-select" name="resource_type" required>
+                            <option value="academic">Academic Material (Notes, QP, Manuals, PPT)</option>
+                            <option value="physical">Physical Hardware (Arduino, Sensors, Kits, Tools)</option>
+                            <option value="campus">Campus Facility (Seminar Hall, Labs, Projector)</option>
+                        </select>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Category</label>
+                        <select class="form-select" name="category" required>
+                            <option value="">-- Select Category --</option>
+                            {% for c in categories %}
+                                <option value="{{ c.name }}">{{ c.name }} ({{ c.type|capitalize }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="col-12">
+                        <label for="title" class="form-label small fw-semibold text-secondary">Resource Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="e.g. DBMS Normalization and Transaction Concurrency Handwritten Notes" required>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="col-md-6">
+                        <label for="department" class="form-label small fw-semibold text-secondary">Department</label>
+                        <select class="form-select" id="department" name="department" required>
+                            <option value="CSE" {% if session.get('department') == 'CSE' %}selected{% endif %}>Computer Science &amp; Engg (CSE)</option>
+                            <option value="ECE" {% if session.get('department') == 'ECE' %}selected{% endif %}>Electronics &amp; Comm Engg (ECE)</option>
+                            <option value="IT" {% if session.get('department') == 'IT' %}selected{% endif %}>Information Technology (IT)</option>
+                            <option value="MECH" {% if session.get('department') == 'MECH' %}selected{% endif %}>Mechanical Engg (MECH)</option>
+                            <option value="CIVIL" {% if session.get('department') == 'CIVIL' %}selected{% endif %}>Civil Engg (CIVIL)</option>
+                            <option value="EEE" {% if session.get('department') == 'EEE' %}selected{% endif %}>Electrical &amp; Electronics (EEE)</option>
+                            <option value="BASIC SCIENCES">Basic Sciences / Humanities</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester -->
+                    <div class="col-md-3">
+                        <label for="semester" class="form-label small fw-semibold text-secondary">Semester</label>
+                        <select class="form-select" id="semester" name="semester">
+                            <option value="All">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5" selected>Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="col-md-3">
+                        <label for="subject" class="form-label small fw-semibold text-secondary">Course / Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" placeholder="e.g. DBMS, OS, IoT">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label for="description" class="form-label small fw-semibold text-secondary">Description &amp; Syllabus Coverage</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Provide key highlights, topics covered, or kit specifications..." required></textarea>
+                    </div>
+
+                    <!-- File Upload (Academic files) -->
+                    <div class="col-md-6">
+                        <label for="resource_file" class="form-label small fw-semibold text-secondary">
+                            Attach Digital Document / Archive (Academic)
+                        </label>
+                        <input type="file" class="form-control" id="resource_file" name="resource_file">
+                        <small class="text-muted">Allowed: PDF, DOCX, PPTX, TXT, ZIP (Max 16MB)</small>
+                    </div>
+
+                    <!-- Physical Location / Room -->
+                    <div class="col-md-6">
+                        <label for="location" class="form-label small fw-semibold text-secondary">
+                            Physical Location / Lab Room (Hardware / Campus)
+                        </label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               placeholder="e.g. Room 304, IoT Lab, Block B">
+                    </div>
+
+                    <!-- Tags (Embedded Array NoSQL demonstration) -->
+                    <div class="col-12">
+                        <label for="tags" class="form-label small fw-semibold text-secondary">
+                            Tags &amp; Keywords (Comma separated &ndash; Demonstrates Embedded Array in MongoDB)
+                        </label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                               placeholder="e.g. DBMS, SQL, Normalization, PreviousQP">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-cs-primary px-4">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Publish Resource
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

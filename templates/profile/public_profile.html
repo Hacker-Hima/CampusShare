@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name }} – Campus Reputation Profile{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('marketplace.list_items') }}" class="text-decoration-none">Campus Directory</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ user.full_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- User Reputation Card -->
+        <div class="col-lg-4">
+            <div class="cs-card text-center mb-4">
+                <div class="mx-auto mb-3" style="width: 85px; height: 85px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #3730a3;">
+                    <i class="bi bi-person"></i>
+                </div>
+
+                <h4 class="fw-bold text-dark mb-0">{{ user.full_name }}</h4>
+                <div class="text-muted small mb-2">@{{ user.username }} &bull; {{ user.department }}</div>
+
+                <!-- Verified Badge & Role -->
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <span class="cs-badge-role cs-badge-{{ user.role }}">{{ user.role|upper }}</span>
+                    {% if user.is_verified %}
+                        <span class="badge bg-success text-white small d-inline-flex align-items-center">
+                            <i class="bi bi-patch-check-fill me-1"></i> Verified Student
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if user.bio %}
+                    <p class="text-secondary small fst-italic px-2 mb-3">"{{ user.bio }}"</p>
+                {% endif %}
+
+                <!-- Trust Score Widget -->
+                <div class="p-3 my-3 bg-light rounded border text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-dark"><i class="bi bi-shield-check text-success me-1"></i>Campus Trust Score</span>
+                        <span class="fw-bold fs-6 text-success">{{ trust_score }}/100</span>
+                    </div>
+                    {% set bar_color = 'bg-success' if (trust_score or 0) >= 80 else ('bg-primary' if (trust_score or 0) >= 60 else 'bg-warning') %}
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar {{ bar_color }}" 
+                             role="progressbar" style="width: {{ trust_score }}%;" aria-valuenow="{{ trust_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted" style="font-size: 0.75rem;">
+                        <span><i class="bi bi-star-fill text-warning me-1"></i>{{ avg_rating }}/5.0 Peer Rating</span>
+                        <span>{{ user_reviews|length }} Reviews</span>
+                    </div>
+                </div>
+
+                <!-- Badges Earned -->
+                {% if badges %}
+                    <div class="text-start mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-2">Recognition Badges</span>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for b in badges %}
+                                <span class="badge bg-{{ b.color }}-subtle text-{{ b.color }} border border-{{ b.color }}-subtle py-1 px-2" title="{{ b.desc }}">
+                                    <i class="bi {{ b.icon }} me-1"></i>{{ b.name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Key Metrics Summary -->
+                <div class="row g-2 text-center py-2 border-top border-bottom mb-3">
+                    <div class="col-4">
+                        <div class="fw-bold text-dark">{{ stats.shared }}</div>
+                        <div class="text-muted small" style="font-size: 0.7rem;">Shared</div>
+                    </div>
+                    <div class="col-4 border-start border-end">
+                        <div class="fw-bold text-dark">{{ stats.borrowed }}</div>
+                        <div class="text-muted small" style="font-size: 0.7rem;">Borrowed</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold text-dark">{{ stats.transactions }}</div>
+                        <div class="text-muted small" style="font-size: 0.7rem;">Transactions</div>
+                    </div>
+                </div>
+
+                <!-- Direct Message Link -->
+                {% if session.get('user_id') and session.get('user_id') != user._id|string %}
+                    <a href="{{ url_for('messages.start_conversation', to_user_id=user._id|string) }}" class="btn btn-cs-primary btn-sm w-100">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Send Campus Message
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Skills & Academic Background -->
+            <div class="cs-card">
+                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-tools me-2 text-primary"></i>Skills &amp; Interests</h6>
+                <p class="text-secondary small mb-3">{{ user.skills or 'Python, Academic Research, Circuit Prototyping' }}</p>
+
+                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-mortarboard me-2 text-primary"></i>Academic Details</h6>
+                <div class="small text-muted">
+                    <div><strong>Department:</strong> {{ user.department }}</div>
+                    {% if user.role == 'student' %}
+                        <div><strong>Year &amp; Section:</strong> Year {{ user.year or '3' }} (Sec {{ user.section or 'A' }})</div>
+                        <div><strong>Student ID:</strong> {{ user.student_id or 'Verified' }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Active Listings & Peer Reviews -->
+        <div class="col-lg-8">
+            <!-- Active Marketplace Listings by this User -->
+            <div class="cs-card mb-4">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title mb-0"><i class="bi bi-shop me-2 text-primary"></i>Active Marketplace Listings</h5>
+                    <span class="badge bg-light text-secondary border">{{ active_listings|length }} Items</span>
+                </div>
+
+                {% if active_listings %}
+                    <div class="row g-3">
+                        {% for item in active_listings %}
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <span class="badge bg-white text-secondary border small">{{ item.category }}</span>
+                                            <span class="fw-bold text-primary">{% if item.is_free %}FREE{% else %}₹{{ item.price|int }}{% endif %}</span>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">
+                                            <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="text-decoration-none text-dark">
+                                                {{ item.title }}
+                                            </a>
+                                        </h6>
+                                        <div class="text-muted small"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.location }}</div>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-top text-end">
+                                        <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="btn btn-outline-primary btn-sm">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small py-2 mb-0">No active marketplace items currently posted by this user.</p>
+                {% endif %}
+            </div>
+
+            <!-- Peer Reviews History -->
+            <div class="cs-card mb-4">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Peer Reviews &amp; Testimonials</h5>
+                    <span class="badge bg-success-subtle text-success">{{ avg_rating }}/5.0 Average</span>
+                </div>
+
+                {% if user_reviews %}
+                    <div class="list-group list-group-flush">
+                        {% for rev in user_reviews %}
+                            <div class="list-group-item px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <strong class="text-dark small">{{ rev.reviewer_name }}</strong>
+                                        <span class="badge bg-light text-secondary border" style="font-size:0.7rem;">{{ rev.transaction_type|capitalize }}</span>
+                                    </div>
+                                    <div class="text-warning small">
+                                        {% for i in range(rev.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-secondary small mb-1">"{{ rev.comment }}"</p>
+                                <span class="text-muted" style="font-size: 0.7rem;">{{ rev.created_at.strftime('%d %b %Y') if rev.created_at else '' }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small py-3 mb-0 text-center">No peer reviews recorded yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Peer Review Form (For Others) -->
+            {% if session.get('user_id') and session.get('user_id') != user._id|string %}
+                <div class="cs-card">
+                    <h5 class="fw-bold text-dark mb-2"><i class="bi bi-pencil-square me-2 text-primary"></i>Rate &amp; Review This Student</h5>
+                    <p class="text-muted small mb-3">Share your transaction or borrowing experience with {{ user.full_name }} to feed their campus Trust Score.</p>
+
+                    <form method="POST" action="{{ url_for('reviews.add_user_review', target_user_id=user._id|string) }}">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Rating (1 to 5 Stars)</label>
+                                <select name="rating" class="form-select form-select-sm" required>
+                                    <option value="5" selected>★★★★★ 5 - Outstanding &amp; Highly Trustworthy</option>
+                                    <option value="4">★★★★☆ 4 - Good Transaction</option>
+                                    <option value="3">★★★☆☆ 3 - Average</option>
+                                    <option value="2">★★☆☆☆ 2 - Below Expectations</option>
+                                    <option value="1">★☆☆☆☆ 1 - Poor / Unreliable</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Interaction Type</label>
+                                <select name="transaction_type" class="form-select form-select-sm" required>
+                                    <option value="marketplace" selected>Marketplace Buy / Sell</option>
+                                    <option value="borrowing">Hardware Borrow &amp; Lend</option>
+                                    <option value="wanted">Wanted Request Fulfillment</option>
+                                    <option value="general">General Collaboration</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Review Comments</label>
+                            <textarea name="comment" class="form-control form-control-sm" rows="3" placeholder="Resource was in excellent condition, punctual meetup, and clear communication..." required></textarea>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-cs-primary btn-sm px-4">
+                                <i class="bi bi-star me-1"></i> Submit Peer Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

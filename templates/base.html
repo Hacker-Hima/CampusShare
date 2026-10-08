@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CAMPUSSHARE – Campus Resource Sharing & Management{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Academic CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Top Sticky Header Navigation -->
+    {% block header %}
+    <header class="cs-navbar">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('index') }}" class="cs-brand">
+                    <i class="bi bi-mortarboard-fill text-primary"></i>
+                    <span>CAMPUSSHARE</span>
+                </a>
+                <span class="badge bg-light text-secondary border d-none d-md-inline-block">Academic &amp; Marketplace Platform</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                {% if session.get('user_id') %}
+                    <!-- Trust Score Badge & Profile Link -->
+                    <div class="d-flex align-items-center gap-2">
+                        {% if current_user_trust_score %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-inline-flex align-items-center gap-1" title="Campus Trust Score">
+                                <i class="bi bi-shield-check"></i> {{ current_user_trust_score }}/100 Trust
+                            </span>
+                        {% endif %}
+                        <span class="cs-badge-role cs-badge-{{ session.get('role', 'student') }}">
+                            {{ session.get('role', 'student') }}
+                        </span>
+                        <a href="{{ url_for('profile.view_profile') }}" class="text-decoration-none text-dark fw-medium small d-none d-lg-inline">
+                            <i class="bi bi-person-circle me-1 text-secondary"></i>
+                            {{ session.get('full_name') or session.get('username') }}
+                        </a>
+                    </div>
+
+                    <!-- Server-Rendered Messaging Icon with Dynamic Unread Badge -->
+                    <a href="{{ url_for('messages.inbox') }}" class="btn btn-sm btn-light border position-relative" title="Campus Messages">
+                        <i class="bi bi-chat-dots"></i>
+                        {% if unread_messages_count and unread_messages_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.65rem;">
+                                {{ unread_messages_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Notification Bell with Dynamic Unread Badge -->
+                    <a href="{{ url_for('notifications.list_notifications') }}" class="btn btn-sm btn-light border position-relative" title="Notification Center">
+                        <i class="bi bi-bell"></i>
+                        {% if unread_notifications_count and unread_notifications_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Direct Quick Actions -->
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </a>
+                {% else %}
+                    <!-- Guest Navigation Links -->
+                    {% if request.endpoint not in ['auth.login', 'auth.register'] %}
+                        <a href="{{ url_for('resources.list_resources') }}" class="btn btn-sm btn-link text-decoration-none text-secondary">
+                            <i class="bi bi-search me-1"></i> Library
+                        </a>
+                        <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-sm btn-link text-decoration-none text-secondary">
+                            <i class="bi bi-shop me-1"></i> Marketplace
+                        </a>
+                        <a href="{{ url_for('campus_impact') }}" class="btn btn-sm btn-link text-decoration-none text-secondary d-none d-md-inline">
+                            <i class="bi bi-recycle me-1 text-success"></i> Impact
+                        </a>
+                    {% endif %}
+                    {% if request.endpoint != 'auth.login' %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                        </a>
+                    {% endif %}
+                    {% if request.endpoint != 'auth.register' %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-cs-primary">
+                            <i class="bi bi-person-plus me-1"></i> Register
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    {% endblock %}
+
+    <!-- System Announcements Alert Bar -->
+    {% if active_announcements %}
+        {% for ann in active_announcements %}
+            <div class="alert alert-{% if ann.priority == 'high' %}warning{% else %}primary{% endif %} alert-dismissible fade show rounded-0 mb-0 py-2 border-bottom text-center small" role="alert">
+                <i class="bi bi-megaphone-fill me-2"></i>
+                <strong>{{ ann.title }}:</strong> {{ ann.content }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Main Wrapper: Sidebar + Content -->
+    <div class="cs-wrapper">
+        {% if session.get('user_id') %}
+            <!-- Authenticated Role-Based Sidebar Navigation -->
+            <aside class="cs-sidebar">
+                <!-- STUDENT ROLE NAVIGATION -->
+                {% if session.get('role') == 'student' %}
+                    <div class="cs-sidebar-heading">Academic</div>
+                    <a href="{{ url_for('student.dashboard') }}" class="cs-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-speedometer2"></i> Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('resources.list_resources') }}" class="cs-nav-item {% if active_page == 'resources' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-collection"></i> Library Notes</span>
+                    </a>
+                    <a href="{{ url_for('requests.list_requests') }}" class="cs-nav-item {% if active_page == 'requests' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-search-heart"></i> Wanted Board</span>
+                    </a>
+                    <a href="{{ url_for('resources.my_uploads') }}" class="cs-nav-item {% if active_page == 'my_uploads' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-cloud-arrow-up"></i> My Uploads</span>
+                    </a>
+
+                    <div class="cs-sidebar-heading mt-3">Marketplace</div>
+                    <a href="{{ url_for('marketplace.list_items') }}" class="cs-nav-item {% if active_page == 'marketplace' and request.endpoint == 'marketplace.list_items' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-shop"></i> Buy &amp; Browse</span>
+                    </a>
+                    <a href="{{ url_for('marketplace.create_item') }}" class="cs-nav-item {% if request.endpoint == 'marketplace.create_item' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-plus-circle"></i> Post Listing</span>
+                    </a>
+                    <a href="{{ url_for('marketplace.my_listings') }}" class="cs-nav-item {% if request.endpoint == 'marketplace.my_listings' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-tag"></i> My Listings</span>
+                    </a>
+                    <a href="{{ url_for('marketplace.manage_offers') }}" class="cs-nav-item {% if request.endpoint == 'marketplace.manage_offers' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-cash-coin"></i> Offers &amp; Bids</span>
+                    </a>
+                    <a href="{{ url_for('marketplace.my_wishlist') }}" class="cs-nav-item {% if request.endpoint == 'marketplace.my_wishlist' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-bookmark-heart"></i> Wishlist</span>
+                    </a>
+
+                    <div class="cs-sidebar-heading mt-3">Campus Sharing</div>
+                    <a href="{{ url_for('borrowings.my_borrowings') }}" class="cs-nav-item {% if active_page == 'borrowings' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-arrow-left-right"></i> Borrow &amp; Lend</span>
+                    </a>
+                    <a href="{{ url_for('reservations.my_reservations') }}" class="cs-nav-item {% if active_page == 'reservations' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-calendar-check"></i> Facility Booking</span>
+                    </a>
+                    <a href="{{ url_for('lost_found.list_items') }}" class="cs-nav-item {% if active_page == 'lost_found' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-compass"></i> Lost &amp; Found</span>
+                    </a>
+
+                    <div class="cs-sidebar-heading mt-3">Community &amp; Trust</div>
+                    <a href="{{ url_for('messages.inbox') }}" class="cs-nav-item {% if active_page == 'messages' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-chat-dots"></i> Messages</span>
+                        {% if unread_messages_count and unread_messages_count > 0 %}
+                            <span class="badge bg-primary rounded-pill small">{{ unread_messages_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('campus_impact') }}" class="cs-nav-item {% if active_page == 'impact' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-recycle text-success"></i> Campus Impact</span>
+                    </a>
+
+                <!-- FACULTY ROLE NAVIGATION -->
+                {% elif session.get('role') == 'faculty' %}
+                    <div class="cs-sidebar-heading">Faculty Portal</div>
+                    <a href="{{ url_for('faculty.dashboard') }}" class="cs-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-speedometer2"></i> Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('resources.list_resources') }}" class="cs-nav-item {% if active_page == 'resources' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-collection"></i> Academic Catalog</span>
+                    </a>
+                    <a href="{{ url_for('requests.list_requests') }}" class="cs-nav-item {% if active_page == 'requests' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-question-circle"></i> Student Requests</span>
+                    </a>
+                    <a href="{{ url_for('marketplace.list_items') }}" class="cs-nav-item {% if active_page == 'marketplace' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-shop"></i> Marketplace</span>
+                    </a>
+                    <a href="{{ url_for('borrowings.manage_borrowings') }}" class="cs-nav-item {% if active_page == 'borrowings' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-box-seam"></i> Lab Equipment</span>
+                    </a>
+                    <a href="{{ url_for('reservations.my_reservations') }}" class="cs-nav-item {% if active_page == 'reservations' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-calendar-check"></i> Reservations</span>
+                    </a>
+                    <a href="{{ url_for('messages.inbox') }}" class="cs-nav-item {% if active_page == 'messages' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-chat-dots"></i> Messages</span>
+                    </a>
+
+                <!-- ADMIN ROLE NAVIGATION -->
+                {% elif session.get('role') == 'admin' %}
+                    <div class="cs-sidebar-heading">Administration</div>
+                    <a href="{{ url_for('admin.dashboard') }}" class="cs-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-speedometer2"></i> Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_users') }}" class="cs-nav-item {% if active_page == 'users' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-people"></i> Users &amp; Verification</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_resources') }}" class="cs-nav-item {% if active_page == 'resources' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-folder2-open"></i> Resources</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_marketplace') }}" class="cs-nav-item {% if active_page == 'marketplace' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-shop"></i> Marketplace</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_requests') }}" class="cs-nav-item {% if active_page == 'requests' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-search-heart"></i> Wanted Requests</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_borrowings') }}" class="cs-nav-item {% if active_page == 'borrowings' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-arrow-left-right"></i> Borrowings</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_reservations') }}" class="cs-nav-item {% if active_page == 'reservations' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-calendar-event"></i> Reservations</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_lost_found') }}" class="cs-nav-item {% if active_page == 'lost_found' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-compass"></i> Lost &amp; Found</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_disputes') }}" class="cs-nav-item {% if active_page == 'disputes' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-exclamation-triangle"></i> Disputes</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_reports') }}" class="cs-nav-item {% if active_page == 'reports' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-flag"></i> Reports</span>
+                    </a>
+                    <a href="{{ url_for('admin.analytics') }}" class="cs-nav-item {% if active_page == 'analytics' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-graph-up"></i> Platform Analytics</span>
+                    </a>
+                    <a href="{{ url_for('admin.manage_announcements') }}" class="cs-nav-item {% if active_page == 'announcements' %}active{% endif %}">
+                        <span class="cs-nav-item-content"><i class="bi bi-megaphone"></i> Announcements</span>
+                    </a>
+                {% endif %}
+
+                <div class="cs-sidebar-heading mt-3">Account &amp; Trust</div>
+                <a href="{{ url_for('profile.view_profile') }}" class="cs-nav-item {% if active_page == 'profile' %}active{% endif %}">
+                    <span class="cs-nav-item-content"><i class="bi bi-person-badge"></i> My Profile &amp; Trust</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="cs-nav-item text-danger">
+                    <span class="cs-nav-item-content"><i class="bi bi-box-arrow-right"></i> Sign Out</span>
+                </a>
+            </aside>
+        {% endif %}
+
+        <!-- Main Body Area -->
+        <main class="{% if session.get('user_id') %}cs-main-content{% else %}cs-main-content-full{% endif %}">
+            <!-- Flash Message Banner Notifications -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="cs-alert-container">
+                        {% for category, message in messages %}
+                            <div class="cs-alert cs-alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'info' }}">
+                                {% if category == 'success' %}
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                {% endif %}
+                                <div class="flex-grow-1">{{ message }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Academic Footer -->
+    {% block footer %}
+    <footer class="cs-footer">
+        <div class="container-fluid d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>
+                <strong>CAMPUSSHARE</strong> &bull; Campus Resource Sharing &amp; Management Platform
+            </div>
+            <div class="text-secondary small">
+                &copy; 2026 CampusShare Ecosystem &bull; Empowering Sustainable Academic Sharing
+            </div>
+            <div>
+                <span class="badge bg-light text-secondary border">Academic Network</span>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+</body>
+</html>

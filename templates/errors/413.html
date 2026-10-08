@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}File Too Large (413) – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 col-lg-5 text-center">
+        <div class="mb-4">
+            <span class="display-1 fw-bold text-warning">413</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">Upload Exceeds 16 MB Limit</h3>
+        <p class="text-secondary small mb-4">
+            The file you attempted to upload exceeds the maximum allowable university file threshold of 16 Megabytes. Please compress the document or split it before submitting.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Try Uploading Again
+            </a>
+            <a href="{{ url_for('resources.list_resources') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-collection me-1"></i> Back to Catalog
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Lost &amp; Found Oversight – Administration{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-compass text-primary me-2"></i>Campus Lost &amp; Found Moderation</h4>
+            <p class="text-secondary small mb-0">Oversee reported lost possessions, custody of found items, and claim resolutions.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="cs-card p-0">
+        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark small text-uppercase">All Incident Reports</span>
+            <span class="badge bg-white text-secondary border">{{ items|length }} Total</span>
+        </div>
+
+        {% if items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Reporter</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for it in items %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{% if it.item_type == 'lost' %}danger{% else %}success{% endif %} text-white text-uppercase">
+                                        {{ it.item_type }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-dark">
+                                    <a href="{{ url_for('lost_found.view_item', item_id=it._id) }}" class="text-dark text-decoration-none">
+                                        {{ it.title }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ it.category }}</span></td>
+                                <td>{{ it.location }}</td>
+                                <td>{{ it.reporter_name }}</td>
+                                <td>
+                                    <span class="badge bg-{% if it.status == 'recovered' %}secondary text-white{% else %}warning text-dark{% endif %}">
+                                        {{ it.status|upper }}
+                                    </span>
+                                </td>
+                                <td class="text-muted">{{ it.created_at.strftime('%d %b %Y') if it.created_at else '' }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('lost_found.view_item', item_id=it._id) }}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted small py-4 mb-0 text-center">No lost &amp; found reports recorded.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

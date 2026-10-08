@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}My Facility Reservations – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-check text-primary me-2"></i>Campus Facility Bookings</h3>
+            <p class="text-secondary small mb-0">Manage bookings for seminar halls, conference auditoriums, departmental labs, and projectors</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('reservations.view_schedule') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-calendar3 me-1"></i> View Campus Schedule
+            </a>
+            <a href="{{ url_for('resources.list_resources', type='campus') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Book New Facility
+            </a>
+        </div>
+    </div>
+
+    <!-- Active User Bookings Table -->
+    <div class="cs-card mb-4">
+        <div class="cs-card-header">
+            <h5 class="cs-card-title">My Reservation History</h5>
+            <span class="badge bg-light text-secondary border">{{ reservations|length }} bookings</span>
+        </div>
+        {% if reservations %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Facility &amp; Location</th>
+                            <th>Date</th>
+                            <th>Time Slot</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservations %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    <a href="/resources/view/{{ r.resource_id }}" class="text-decoration-none text-dark">
+                                        {{ r.resource_title }}
+                                    </a>
+                                </div>
+                                <small class="text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ r.resource_location }}</small>
+                            </td>
+                            <td class="fw-semibold text-secondary">{{ r.date }}</td>
+                            <td>
+                                <span class="badge bg-light text-primary border">
+                                    <i class="bi bi-clock me-1"></i>{{ r.start_time }} &ndash; {{ r.end_time }}
+                                </span>
+                            </td>
+                            <td class="text-secondary text-truncate" style="max-width: 200px;" title="{{ r.purpose }}">{{ r.purpose }}</td>
+                            <td>
+                                {% if r.status == 'confirmed' %}
+                                    <span class="badge bg-success-subtle text-success border">CONFIRMED</span>
+                                {% elif r.status == 'cancelled' %}
+                                    <span class="badge bg-secondary-subtle text-secondary border">CANCELLED</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border">{{ r.status|upper }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if r.status == 'confirmed' %}
+                                    <form method="POST" action="{{ url_for('reservations.cancel_reservation', reservation_id=r._id) }}" 
+                                          onsubmit="return confirm('Cancel this facility reservation?');" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Cancel Booking">
+                                            <i class="bi bi-x-circle me-1"></i> Cancel
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted small">&mdash;</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-calendar-x fs-1 text-secondary d-block mb-2"></i>
+                You have not booked any campus facilities yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Available Campus Facilities Quick Grid -->
+    {% if campus_resources %}
+        <div class="cs-card">
+            <div class="cs-card-header">
+                <h5 class="cs-card-title"><i class="bi bi-building me-2 text-primary"></i>Available Shared Campus Facilities</h5>
+            </div>
+            <div class="row g-3">
+                {% for fac in campus_resources %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="p-3 border rounded bg-light h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border mb-2">{{ fac.category }}</span>
+                            <h6 class="fw-bold text-dark mb-1">{{ fac.title }}</h6>
+                            <small class="text-muted d-block mb-2"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ fac.location or 'Main Campus' }}</small>
+                            <p class="text-secondary small mb-3 text-truncate">{{ fac.description }}</p>
+                        </div>
+                        <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                            <span class="cs-badge cs-badge-{{ fac.availability }}">{{ fac.availability|upper }}</span>
+                            <a href="{{ url_for('reservations.book_resource', resource_id=fac._id) }}" class="btn btn-sm btn-outline-primary">
+                                Reserve Slot &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

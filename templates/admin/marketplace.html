@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace Moderation – CAMPUSSHARE Administration{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-shop text-primary me-2"></i>Campus Marketplace Moderation</h4>
+            <p class="text-secondary small mb-0">Oversee active, reserved, and completed second-hand listings across student dorms and academic blocks.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="cs-card p-0">
+        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark small text-uppercase">All Campus Marketplace Listings</span>
+            <span class="badge bg-white text-secondary border">{{ listings|length }} Total Items</span>
+        </div>
+
+        {% if listings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Title</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Seller</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in listings %}
+                            <tr>
+                                <td class="fw-bold text-dark">
+                                    <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="text-dark text-decoration-none">
+                                        {{ item.title }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ item.category }}</span></td>
+                                <td>
+                                    {% if item.is_free or item.price == 0 %}
+                                        <span class="badge bg-success-subtle text-success">FREE</span>
+                                    {% else %}
+                                        <strong>₹{{ item.price|int }}</strong>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.seller_name }} ({{ item.seller_dept }})</td>
+                                <td><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.location }}</td>
+                                <td>
+                                    <span class="badge bg-{% if item.status == 'available' %}success{% elif item.status == 'reserved' %}warning{% else %}secondary{% endif %}-subtle text-{% if item.status == 'available' %}success{% elif item.status == 'reserved' %}warning{% else %}secondary{% endif %} border">
+                                        {{ item.status|upper }}
+                                    </span>
+                                </td>
+                                <td class="text-muted">{{ item.created_at.strftime('%d %b %Y') if item.created_at else '' }}</td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="btn btn-outline-secondary btn-sm" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('admin.delete_marketplace_item', item_id=item._id) }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Remove Listing">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted small py-4 mb-0 text-center">No marketplace listings currently found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

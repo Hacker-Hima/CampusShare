@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Request a Resource – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-8">
+        <div class="cs-card p-4">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="cs-stat-icon purple">
+                    <i class="bi bi-patch-question-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-1">Request an Academic or Hardware Resource</h4>
+                    <p class="text-secondary small mb-0">Cannot find lecture notes, a sensor module, or previous papers? Post a request to the campus network</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('requests.create_request') }}">
+                <div class="row g-3">
+                    <!-- Resource Name -->
+                    <div class="col-12">
+                        <label for="resource_name" class="form-label small fw-semibold text-secondary">Resource Title / Topic</label>
+                        <input type="text" class="form-control" id="resource_name" name="resource_name" 
+                               value="{{ form.get('resource_name', '') }}" 
+                               placeholder="e.g. Machine Learning End-Semester Solved Question Papers (2024-2025)" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Resource Category</label>
+                        <select class="form-select" name="category" required>
+                            <option value="">-- Select Category --</option>
+                            {% for c in categories %}
+                                <option value="{{ c.name }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="col-md-6">
+                        <label for="department" class="form-label small fw-semibold text-secondary">Academic Department</label>
+                        <select class="form-select" id="department" name="department" required>
+                            <option value="CSE" {% if session.get('department') == 'CSE' %}selected{% endif %}>CSE</option>
+                            <option value="ECE" {% if session.get('department') == 'ECE' %}selected{% endif %}>ECE</option>
+                            <option value="IT" {% if session.get('department') == 'IT' %}selected{% endif %}>IT</option>
+                            <option value="MECH" {% if session.get('department') == 'MECH' %}selected{% endif %}>MECH</option>
+                            <option value="CIVIL" {% if session.get('department') == 'CIVIL' %}selected{% endif %}>CIVIL</option>
+                            <option value="EEE" {% if session.get('department') == 'EEE' %}selected{% endif %}>EEE</option>
+                            <option value="BASIC SCIENCES">Basic Sciences / Humanities</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester -->
+                    <div class="col-md-6">
+                        <label for="semester" class="form-label small fw-semibold text-secondary">Semester</label>
+                        <select class="form-select" id="semester" name="semester">
+                            <option value="All">All Semesters</option>
+                            {% for s in ['1', '2', '3', '4', '5', '6', '7', '8'] %}
+                                <option value="{{ s }}">Semester {{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Required Date -->
+                    <div class="col-md-6">
+                        <label for="required_date" class="form-label small fw-semibold text-secondary">Date Needed By</label>
+                        <input type="date" class="form-control" id="required_date" name="required_date">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label for="description" class="form-label small fw-semibold text-secondary">Detailed Requirements</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Specify particular chapters, textbook editions, sensor board revisions, or lab experiment numbers needed..." required>{{ form.get('description', '') }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{{ url_for('requests.list_requests') }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-cs-primary px-4">
+                        <i class="bi bi-send me-1"></i> Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

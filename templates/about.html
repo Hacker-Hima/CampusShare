@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}About CampusShare – Academic Sharing &amp; Campus Ecosystem{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <!-- Hero Header -->
+    <div class="p-5 mb-5 rounded-4 text-white shadow-sm" style="background: radial-gradient(circle at 80% 20%, #2563eb 0%, #1e1b4b 60%, #0f172a 100%);">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-white text-dark px-3 py-2 rounded-pill fw-semibold mb-3">
+                    <i class="bi bi-mortarboard-fill text-primary me-1"></i> Institutional Sharing Platform
+                </span>
+                <h1 class="display-6 fw-bold mb-3 tracking-tight">About CampusShare 2.0</h1>
+                <p class="lead text-white text-opacity-80 fs-6 mb-4" style="max-width: 650px;">
+                    A unified smart campus network designed to simplify resource sharing, eliminate academic waste, and empower student-to-student collaboration with institutional trust and reputation.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if not session.get('user_id') %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-sm rounded-pill px-4 fw-semibold">
+                            <i class="bi bi-person-plus me-1 text-primary"></i> Create College Account
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('marketplace.marketplace_overview') }}" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                        <i class="bi bi-shop me-1"></i> Marketplace Overview
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.18);">
+                    <div class="display-5 fw-bold text-white mb-1">{{ total_students or '500+' }}</div>
+                    <div class="small text-white text-opacity-75 mb-3">Verified Campus Peers</div>
+                    <div class="display-5 fw-bold text-white mb-1">{{ total_resources or '1,200+' }}</div>
+                    <div class="small text-white text-opacity-75">Curated Academic Notes &amp; Files</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What is CampusShare Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="h-100 p-4 rounded-4 bg-white border shadow-sm">
+                <div class="d-inline-flex p-3 rounded-3 bg-primary-subtle text-primary fs-3 mb-3">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-3">Our Core Mission</h4>
+                <p class="text-secondary leading-relaxed mb-3">
+                    Every semester, thousands of expensive textbooks, scientific calculators, mini-drafters, and lab coats are purchased, used for a few months, and then shelved indefinitely.
+                </p>
+                <p class="text-secondary leading-relaxed mb-0">
+                    <strong>CampusShare</strong> connects students, faculty, and departments across the college into a circular resource loop. By enabling verified peer-to-peer exchanges and academic note sharing, we lower the cost of education while fostering sustainable campus habits.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="h-100 p-4 rounded-4 bg-white border shadow-sm">
+                <div class="d-inline-flex p-3 rounded-3 bg-success-subtle text-success fs-3 mb-3">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-3">Institutional Trust &amp; Safety</h4>
+                <p class="text-secondary leading-relaxed mb-3">
+                    Unlike open social media groups or anonymous classifieds, CampusShare operates exclusively within the verified boundaries of our college:
+                </p>
+                <ul class="list-unstyled text-secondary small d-flex flex-column gap-2 mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Verified Accounts:</strong> Students and faculty register with official student ID, department, and semester.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Dynamic Trust Scoring:</strong> Transparent 0–100 reputation score calculated from verified handovers and peer feedback.</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Safe On-Campus Handover:</strong> All physical exchanges happen at designated campus spots (Library, Cafeteria, Student Center).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Pillars / How It Works -->
+    <div class="mb-5">
+        <div class="text-center mb-4">
+            <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-semibold">Ecosystem Architecture</span>
+            <h3 class="fw-bold text-dark mt-2">How CampusShare Works</h3>
+            <p class="text-muted small">Five integrated pillars that power our unified campus ecosystem</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Pillar 1 -->
+            <div class="col-md-4">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-shadow">
+                    <div class="text-primary fs-2 mb-3"><i class="bi bi-collection-play"></i></div>
+                    <h5 class="fw-bold text-dark">1. Academic Library Notes</h5>
+                    <p class="text-secondary small mb-0">
+                        Upload lecture slides, handwritten notes, previous exam question papers, and lab manuals. Peer-reviewed with faculty verification badges.
+                    </p>
+                </div>
+            </div>
+            <!-- Pillar 2 -->
+            <div class="col-md-4">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-shadow">
+                    <div class="text-success fs-2 mb-3"><i class="bi bi-shop"></i></div>
+                    <h5 class="fw-bold text-dark">2. Campus Marketplace</h5>
+                    <p class="text-secondary small mb-0">
+                        Buy, sell, or donate second-hand calculators, cycles, reference books, and project components with zero middleman commissions.
+                    </p>
+                </div>
+            </div>
+            <!-- Pillar 3 -->
+            <div class="col-md-4">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-shadow">
+                    <div class="text-warning fs-2 mb-3"><i class="bi bi-search-heart"></i></div>
+                    <h5 class="fw-bold text-dark">3. Wanted Request Board</h5>
+                    <p class="text-secondary small mb-0">
+                        Need a specific book or sensor kit that isn't listed? Post an urgent wanted request with automated smart resource matching.
+                    </p>
+                </div>
+            </div>
+            <!-- Pillar 4 -->
+            <div class="col-md-6">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-shadow">
+                    <div class="text-info fs-2 mb-3"><i class="bi bi-compass"></i></div>
+                    <h5 class="fw-bold text-dark">4. Lost &amp; Found Portal</h5>
+                    <p class="text-secondary small mb-0">
+                        Lost your ID card, earphones, or umbrella on campus? Report found items with image verification to reunite belongings with rightful owners.
+                    </p>
+                </div>
+            </div>
+            <!-- Pillar 5 -->
+            <div class="col-md-6">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-shadow">
+                    <div class="text-danger fs-2 mb-3"><i class="bi bi-recycle"></i></div>
+                    <h5 class="fw-bold text-dark">5. Circular Campus Impact</h5>
+                    <p class="text-secondary small mb-0">
+                        Real-time metrics tracking the total financial savings, carbon emissions prevented, and materials recirculated across the academic year.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action Banner -->
+    <div class="p-5 rounded-4 bg-light border text-center my-4">
+        <h3 class="fw-bold text-dark mb-2">Ready to Experience CampusShare?</h3>
+        <p class="text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">
+            Join your classmates and professors today. Sign in to your institutional account or create a new student profile in less than a minute.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-cs-primary rounded-pill px-4">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-person-plus me-1"></i> Register Student / Faculty
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

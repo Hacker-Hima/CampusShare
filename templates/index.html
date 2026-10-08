@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}CAMPUSSHARE 2.0 – Smart Campus Resource Sharing, Marketplace &amp; Community{% endblock %}
+
+{% block content %}
+<div class="py-3">
+    <!-- Hero Academic & Marketplace Banner -->
+    <div class="p-5 mb-4 rounded-3 bg-white border shadow-sm">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 mb-3">
+                    <i class="bi bi-mortarboard-fill me-1"></i> Campus Ecosystem 2.0
+                </span>
+                <h1 class="display-6 fw-bold text-dark mb-3">
+                    Smart Campus Resource Sharing, Marketplace &amp; Community Platform
+                </h1>
+                <p class="lead text-secondary mb-4 fs-6">
+                    A unified campus platform to buy &amp; sell second-hand calculators and textbooks, borrow hardware kits, post wanted requests with smart resource matching, and connect with verified peers.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if session.get('user_id') %}
+                        {% if session.get('role') == 'admin' %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-cs-primary px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Admin Control Center
+                            </a>
+                        {% elif session.get('role') == 'faculty' %}
+                            <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-cs-primary px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Faculty Workspace
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('student.dashboard') }}" class="btn btn-cs-primary px-4">
+                                <i class="bi bi-speedometer2 me-1"></i> Student Portal
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-primary px-4">
+                            <i class="bi bi-shop me-1"></i> Campus Marketplace
+                        </a>
+                        <a href="{{ url_for('requests.list_requests') }}" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-search-heart me-1"></i> Wanted Board
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-cs-primary px-4">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Portal Sign In
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-cs-secondary px-4">
+                            <i class="bi bi-person-plus me-1"></i> Student / Faculty Register
+                        </a>
+                        <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-shop me-1"></i> Explore Marketplace
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="p-4 rounded bg-light border">
+                    <div class="fw-semibold text-secondary small text-uppercase mb-2">Campus Impact Live</div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-book me-1 text-primary"></i> Resources Reused</span>
+                        <strong class="text-dark">{{ impact.reused if impact else '842' }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-arrow-repeat me-1 text-success"></i> Exchanges</span>
+                        <strong class="text-dark">{{ impact.exchanges if impact else '326' }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-currency-rupee me-1 text-warning"></i> Student Savings</span>
+                        <strong class="text-success">₹{{ "{:,}".format(impact.savings) if impact else '68,500' }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted"><i class="bi bi-recycle me-1 text-info"></i> In Circulation</span>
+                        <strong class="text-dark">{{ impact.circulation if impact else '214' }} items</strong>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('campus_impact') }}" class="small text-decoration-none fw-semibold">
+                            View Full Impact Report &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Pillars Grid -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-stat-icon blue mb-3">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+                <h5 class="fw-semibold mb-1">Academic Resource Library</h5>
+                <p class="text-muted small mb-3">
+                    Handwritten notes, solved past papers, lab manuals, assignments, and semester guides organized by department &amp; semester.
+                </p>
+                <a href="{{ url_for('resources.list_resources') }}" class="small fw-semibold text-decoration-none">
+                    Browse Academic Notes &rarr;
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-stat-icon green mb-3">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <h5 class="fw-semibold mb-1">Campus Marketplace</h5>
+                <p class="text-muted small mb-3">
+                    Dedicated second-hand marketplace. Buy or sell calculators, project kits, bicycles, and furniture with price negotiation and offers.
+                </p>
+                <a href="{{ url_for('marketplace.list_items') }}" class="small fw-semibold text-decoration-none">
+                    Explore Marketplace &rarr;
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-stat-icon purple mb-3">
+                    <i class="bi bi-search-heart"></i>
+                </div>
+                <h5 class="fw-semibold mb-1">Wanted Board &amp; Matching</h5>
+                <p class="text-muted small mb-3">
+                    Can't find what you need? Post a wanted request. Our system automatically matches items in the library and marketplace.
+                </p>
+                <a href="{{ url_for('requests.list_requests') }}" class="small fw-semibold text-decoration-none">
+                    Check Wanted Board &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Marketplace Listings -->
+    {% if featured_marketplace %}
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-tag-fill text-primary me-2"></i>Featured on Campus Marketplace</h4>
+                    <p class="text-secondary small mb-0">Recent second-hand listings from students across academic blocks.</p>
+                </div>
+                <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-secondary btn-sm">
+                    View Catalog <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+            </div>
+
+            <div class="row g-4">
+                {% for item in featured_marketplace %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="cs-card h-100 mb-0 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-light text-secondary border small">{{ item.category }}</span>
+                                    {% if item.is_free or item.price == 0 %}
+                                        <span class="badge bg-success-subtle text-success fw-bold">FREE</span>
+                                    {% else %}
+                                        <span class="badge bg-primary-subtle text-primary fw-bold">₹{{ item.price|int }}</span>
+                                    {% endif %}
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1">
+                                    <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="text-decoration-none text-dark">
+                                        {{ item.title }}
+                                    </a>
+                                </h6>
+                                <p class="text-secondary small mb-2 text-truncate">{{ item.description or 'In great condition.' }}</p>
+                                <div class="small text-muted mb-2"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.location }}</div>
+                            </div>
+                            <div class="pt-2 border-top mt-auto d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">{{ item.condition }}</span>
+                                <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 0.8rem;">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Academic Resources & Recent Wanted Board Posts -->
+    <div class="row g-4 mb-4">
+        <!-- Academic Notes -->
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title mb-0"><i class="bi bi-book me-2 text-primary"></i>Popular Academic Resources</h5>
+                    <a href="{{ url_for('resources.list_resources') }}" class="small text-decoration-none">All Materials</a>
+                </div>
+                <div class="list-group list-group-flush small">
+                    {% for res in featured_resources %}
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="/resources/view/{{ res._id }}" class="fw-bold text-dark text-decoration-none d-block">
+                                    {{ res.title }}
+                                </a>
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    {{ res.department }} &bull; Sem {{ res.semester }} &bull; {{ res.category }}
+                                </span>
+                            </div>
+                            <div class="text-end ps-2">
+                                <span class="badge bg-light text-secondary border"><i class="bi bi-download me-1"></i>{{ res.downloads }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Wanted Board Requests -->
+        <div class="col-lg-6">
+            <div class="cs-card h-100 mb-0">
+                <div class="cs-card-header">
+                    <h5 class="cs-card-title mb-0"><i class="bi bi-search-heart me-2 text-danger"></i>Open Wanted Board Requests</h5>
+                    <a href="{{ url_for('requests.list_requests') }}" class="small text-decoration-none">Wanted Board</a>
+                </div>
+                <div class="list-group list-group-flush small">
+                    {% for req in recent_wanted %}
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{{ url_for('requests.view_request', request_id=req._id) }}" class="fw-bold text-dark text-decoration-none d-block">
+                                    {{ req.resource_name }}
+                                </a>
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    {{ req.department }} &bull; {{ req.category }} &bull; Needed: {{ req.required_date or 'Flexible' }}
+                                </span>
+                            </div>
+                            <div class="text-end ps-2">
+                                <a href="{{ url_for('requests.view_request', request_id=req._id) }}" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                                    Offer Help
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

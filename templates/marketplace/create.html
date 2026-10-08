@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Post Marketplace Listing – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-plus-circle text-primary me-2"></i>Post Item on Marketplace</h4>
+            <p class="text-secondary small mb-0">Sell second-hand items, offer free academic giveaways, or list project components for barter exchange.</p>
+        </div>
+        <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cs-card">
+                <form method="POST" action="{{ url_for('marketplace.create_item') }}" enctype="multipart/form-data">
+                    <!-- Item Title -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Item Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Casio Scientific Calculator fx-991EX, Arduino Uno Kit..." value="{{ form.title or '' }}" required>
+                    </div>
+
+                    <!-- Category & Condition -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">Select Category...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if form.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Condition <span class="text-danger">*</span></label>
+                            <select name="condition" class="form-select" required>
+                                {% for cond in conditions %}
+                                    <option value="{{ cond }}" {% if form.condition == cond %}selected{% endif %}>{{ cond }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Price & Type Options -->
+                    <div class="p-3 mb-3 rounded bg-light border">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Price (₹ INR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" name="price" class="form-control" placeholder="500" min="0" value="{{ form.price or '' }}">
+                                </div>
+                                <div class="form-text" style="font-size: 0.75rem;">Leave 0 if giving away for free.</div>
+                            </div>
+                            <div class="col-md-6 pt-md-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="is_free" value="1" id="checkFree" {% if form.is_free %}checked{% endif %}>
+                                    <label class="form-check-label small fw-semibold text-success" for="checkFree">
+                                        <i class="bi bi-gift me-1"></i> Give away for FREE (₹0)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="accept_exchange" value="1" id="checkExchange" {% if form.accept_exchange %}checked{% endif %}>
+                                    <label class="form-check-label small fw-semibold text-primary" for="checkExchange">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Open for Barter / Exchange
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campus Location -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Campus Meetup Location <span class="text-danger">*</span></label>
+                        <input type="text" name="location" class="form-control" placeholder="e.g. CSE Block 2nd Floor, Central Library Desk, Hostel 3 Stand" value="{{ form.location or '' }}" required>
+                        <div class="form-text" style="font-size: 0.75rem;">Specify where the buyer can meet you safely on campus.</div>
+                    </div>
+
+                    <!-- Item Description -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Detailed Description</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Mention item features, working state, included accessories, reasons for selling...">{{ form.description or '' }}</textarea>
+                    </div>
+
+                    <!-- Photo Upload -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-dark">Upload Item Photo (Optional)</label>
+                        <input type="file" name="item_image" class="form-control" accept="image/*">
+                        <div class="form-text" style="font-size: 0.75rem;">JPG or PNG, max 16MB.</div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('marketplace.list_items') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-cs-primary btn-sm px-4">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> Publish Marketplace Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

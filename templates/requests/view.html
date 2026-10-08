@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Wanted: {{ request_item.resource_name }} – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('requests.list_requests') }}" class="text-decoration-none">Wanted Board</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ request_item.resource_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Request Post -->
+        <div class="col-lg-8">
+            <div class="cs-card mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-{% if request_item.status == 'fulfilled' %}success{% elif request_item.status == 'matched' %}info{% else %}warning{% endif %}-subtle text-{% if request_item.status == 'fulfilled' %}success{% elif request_item.status == 'matched' %}info{% else %}warning{% endif %} border fw-bold text-uppercase me-2">
+                            {{ request_item.status|upper }}
+                        </span>
+                        <span class="badge bg-light text-secondary border">{{ request_item.category }}</span>
+                        {% if request_item.urgency %}
+                            <span class="badge bg-{% if request_item.urgency == 'high' %}danger{% elif request_item.urgency == 'medium' %}warning{% else %}secondary{% endif %}-subtle text-{% if request_item.urgency == 'high' %}danger{% elif request_item.urgency == 'medium' %}warning{% else %}secondary{% endif %} border ms-1">
+                                <i class="bi bi-clock-history me-1"></i>{{ request_item.urgency|upper }} Urgency
+                            </span>
+                        {% endif %}
+                    </div>
+                    <span class="text-muted small">
+                        Posted {{ request_item.created_at.strftime('%d %b %Y') if request_item.created_at else 'Recent' }}
+                    </span>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-3"><i class="bi bi-search me-2 text-primary"></i>Wanted: {{ request_item.resource_name }}</h3>
+
+                <!-- Requirements Banner -->
+                <div class="p-3 rounded bg-light border mb-4">
+                    <div class="row g-3 small">
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Department:</span>
+                            <strong class="text-dark">{{ request_item.department }}</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Semester:</span>
+                            <strong class="text-dark">{{ request_item.semester or 'All' }}</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Needed By:</span>
+                            <strong class="text-primary"><i class="bi bi-calendar-event me-1"></i>{{ request_item.required_date or 'As soon as possible' }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-2">Requirement Description</h5>
+                    <p class="text-secondary" style="white-space: pre-line;">{{ request_item.description or 'No extra details provided.' }}</p>
+                </div>
+
+                <!-- Fulfillment Banner if already fulfilled -->
+                {% if request_item.status == 'fulfilled' %}
+                    <div class="p-3 rounded bg-success-subtle border border-success-subtle mb-4">
+                        <h6 class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-2"></i>Request Fulfilled!</h6>
+                        <div class="small text-secondary">
+                            Fulfilled by <strong>{{ request_item.fulfiller_name or 'A campus peer' }}</strong>:
+                            <span class="fst-italic">"{{ request_item.response_note or 'Material provided.' }}"</span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Offer Resource / Fulfill Action (For Peers) -->
+                {% if session.get('user_id') and session.get('user_id') != request_item.user_id and request_item.status != 'fulfilled' %}
+                    <div class="p-3 rounded bg-white border border-primary-subtle mb-4">
+                        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-gift-fill text-primary me-2"></i>Offer Resource to Fulfill (+15 Points)</h5>
+                        <p class="text-muted small mb-3">Help {{ request_item.user_name }} by offering your material or equipment. Earn +15 campus contribution points!</p>
+
+                        <form method="POST" action="{{ url_for('requests.fulfill_request', request_id=request_item._id) }}">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Response Note / Where to Meet</label>
+                                <textarea name="response_note" class="form-control form-control-sm" rows="2" placeholder="e.g. 'I have this Arduino board! You can collect it from Tech Block Room 304 tomorrow at 11 AM.'" required></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-cs-primary btn-sm px-4">
+                                    <i class="bi bi-check2-circle me-1"></i> Confirm Offer &amp; Fulfill (+15 pts)
+                                </button>
+                                <a href="{{ url_for('messages.start_conversation', to_user_id=request_item.user_id, item_title=request_item.resource_name, context_type='wanted') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-chat-dots me-1"></i> Message Requester
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- SMART RESOURCE MATCHING SECTION (MongoDB Multi-Collection Search) -->
+            <div class="cs-card mb-4 border-primary-subtle" style="background: #f8fafc;">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <div>
+                        <h5 class="fw-bold text-primary mb-0">
+                            <i class="bi bi-magic me-2"></i>Smart Resource Matches
+                        </h5>
+                        <small class="text-muted">Automatically detected matching resources across Marketplace &amp; Academic Library</small>
+                    </div>
+                    <span class="badge bg-primary text-white">Automated Matching</span>
+                </div>
+
+                {% if smart_matches.marketplace or smart_matches.academic %}
+                    <!-- Matched Marketplace Listings -->
+                    {% if smart_matches.marketplace %}
+                        <div class="mb-3">
+                            <div class="fw-bold text-dark small mb-2 text-uppercase"><i class="bi bi-shop me-1 text-primary"></i>Available in Campus Marketplace:</div>
+                            <div class="row g-2">
+                                {% for m_item in smart_matches.marketplace %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-white rounded border d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <a href="{{ url_for('marketplace.view_item', item_id=m_item._id) }}" class="fw-bold text-dark text-decoration-none small d-block">
+                                                    {{ m_item.title }}
+                                                </a>
+                                                <span class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-geo-alt text-danger me-1"></i>{{ m_item.location }}</span>
+                                            </div>
+                                            <div class="text-end ps-2">
+                                                <div class="fw-bold text-primary small">
+                                                    {% if m_item.is_free or m_item.price == 0 %}FREE{% else %}₹{{ m_item.price|int }}{% endif %}
+                                                </div>
+                                                <a href="{{ url_for('marketplace.view_item', item_id=m_item._id) }}" class="btn btn-outline-primary btn-sm py-0 px-2 mt-1" style="font-size: 0.75rem;">
+                                                    View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Matched Academic Resources -->
+                    {% if smart_matches.academic %}
+                        <div>
+                            <div class="fw-bold text-dark small mb-2 text-uppercase"><i class="bi bi-journal-text me-1 text-success"></i>Available in Academic Library:</div>
+                            <div class="row g-2">
+                                {% for a_item in smart_matches.academic %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-white rounded border d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <a href="/resources/view/{{ a_item._id }}" class="fw-bold text-dark text-decoration-none small d-block">
+                                                    {{ a_item.title }}
+                                                </a>
+                                                <span class="text-muted" style="font-size: 0.75rem;">Dept: {{ a_item.department }} &bull; {{ a_item.category }}</span>
+                                            </div>
+                                            <div class="text-end ps-2">
+                                                <span class="badge bg-success-subtle text-success small py-1">Available</span>
+                                                <a href="/resources/view/{{ a_item._id }}" class="btn btn-outline-success btn-sm py-0 px-2 mt-1 d-block" style="font-size: 0.75rem;">
+                                                    Access
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small mb-0 py-2">
+                        No direct keyword matches found currently in the catalog. Other students can review your wanted post and respond directly!
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar: Requester Profile & Reputation Card -->
+        <div class="col-lg-4">
+            <div class="cs-card text-center mb-4">
+                <div class="mx-auto mb-3" style="width: 65px; height: 65px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #3730a3;">
+                    <i class="bi bi-person"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-0">
+                    <a href="{{ url_for('profile.public_profile', target_user_id=request_item.user_id) }}" class="text-decoration-none text-dark">
+                        {{ request_item.user_name }}
+                    </a>
+                </h5>
+                <span class="text-muted small">@{{ request_item.username }} &bull; {{ request_item.department }}</span>
+
+                <!-- Trust Score Pill -->
+                <div class="p-3 my-3 bg-light rounded border text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-dark"><i class="bi bi-shield-check text-success me-1"></i>Campus Trust Score</span>
+                        <span class="fw-bold text-success">{{ requester_trust }}/100</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ requester_trust }}%;" aria-valuenow="{{ requester_trust }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                {% if session.get('user_id') and session.get('user_id') != request_item.user_id %}
+                    <a href="{{ url_for('messages.start_conversation', to_user_id=request_item.user_id, item_title=request_item.resource_name, context_type='wanted') }}" class="btn btn-cs-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Message Requester
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('profile.public_profile', target_user_id=request_item.user_id) }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-person-badge me-1"></i> View Requester Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Category Configuration – CAMPUSSHARE Admin{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-tags-fill text-primary me-2"></i>Resource Taxonomy &amp; Categories</h4>
+            <p class="text-secondary small mb-0">System classification taxonomy across Academic, Physical, and Campus tiers</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Category Form -->
+        <div class="col-lg-4">
+            <div class="cs-card">
+                <h5 class="fw-bold text-dark mb-3">Add New Category</h5>
+                <form method="POST" action="{{ url_for('admin.create_category') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label small fw-semibold text-secondary">Category Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Workshop Kits, E-Books" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Classification Tier</label>
+                        <select class="form-select" name="type" required>
+                            <option value="academic">Academic Material</option>
+                            <option value="physical">Physical Hardware</option>
+                            <option value="campus">Campus Facility</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label small fw-semibold text-secondary">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Brief scope..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cs-primary w-100">
+                        <i class="bi bi-plus-circle me-1"></i> Add Category
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Categories Table -->
+        <div class="col-lg-8">
+            <div class="cs-card">
+                <h5 class="cs-card-title mb-3">Registered Categories ({{ categories|length }})</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Tier</th>
+                                <th>Description</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in categories %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ c.name }}</td>
+                                <td>
+                                    <span class="badge {% if c.type == 'academic' %}bg-primary-subtle text-primary{% elif c.type == 'physical' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} border">
+                                        {{ c.type|upper }}
+                                    </span>
+                                </td>
+                                <td class="text-secondary">{{ c.description }}</td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ url_for('admin.delete_category', category_id=c._id) }}" 
+                                          onsubmit="return confirm('Delete this category?');" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

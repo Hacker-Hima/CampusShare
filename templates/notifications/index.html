@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-bell text-primary me-2"></i>My Notification Center</h3>
+            <p class="text-secondary small mb-0">System alerts regarding uploads, approvals, borrowings, requests, and reviews</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if stats.unread > 0 %}
+                <form method="POST" action="{{ url_for('notifications.mark_all_read') }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                    </button>
+                </form>
+            {% endif %}
+            {% if stats.read > 0 %}
+                <form method="POST" action="{{ url_for('notifications.clear_read') }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Clear all read notifications?');">
+                        <i class="bi bi-trash3 me-1"></i> Clear Read
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Tabs (Normal HTML GET Links - No JavaScript) -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ url_for('notifications.list_notifications') }}" 
+           class="btn btn-sm {% if filter_status == 'all' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            All Notifications ({{ stats.total }})
+        </a>
+        <a href="{{ url_for('notifications.list_notifications', filter='unread') }}" 
+           class="btn btn-sm {% if filter_status == 'unread' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi bi-circle-fill text-primary me-1" style="font-size: 0.5rem;"></i>
+            Unread ({{ stats.unread }})
+        </a>
+        <a href="{{ url_for('notifications.list_notifications', filter='read') }}" 
+           class="btn btn-sm {% if filter_status == 'read' %}btn-cs-primary{% else %}btn-outline-secondary{% endif %}">
+            Read Archive ({{ stats.read }})
+        </a>
+    </div>
+
+    <!-- Notifications Feed -->
+    <div class="cs-card p-0 overflow-hidden">
+        {% if notifications %}
+            <div class="list-group list-group-flush">
+                {% for n in notifications %}
+                <div class="list-group-item p-3 border-bottom d-flex align-items-start justify-content-between gap-3 {% if not n.is_read %}bg-light border-start border-primary border-3{% endif %}">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="cs-stat-icon {% if not n.is_read %}blue{% else %}gray bg-light text-secondary{% endif %} flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.15rem;">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h6 class="fw-bold text-dark mb-0 {% if not n.is_read %}text-primary{% endif %}">{{ n.title }}</h6>
+                                {% if not n.is_read %}
+                                    <span class="badge bg-primary-subtle text-primary border" style="font-size: 0.65rem;">NEW</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-secondary small mb-1" style="line-height: 1.5;">{{ n.message }}</p>
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ n.created_at.strftime('%Y-%m-%d %H:%M') if n.created_at else '' }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Single Notification Action Buttons -->
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                        {% if not n.is_read %}
+                            <form method="POST" action="{{ url_for('notifications.mark_read', notification_id=n._id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-link btn-sm text-primary p-1 text-decoration-none" title="Mark as read">
+                                    <i class="bi bi-check-lg fs-5"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('notifications.delete_notification', notification_id=n._id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-link btn-sm text-secondary p-1 text-decoration-none" title="Delete notification">
+                                <i class="bi bi-trash fs-6"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-bell-slash fs-1 text-secondary d-block mb-2"></i>
+                No notifications found in this view.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

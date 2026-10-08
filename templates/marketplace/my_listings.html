@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}My Marketplace Listings – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-tag text-primary me-2"></i>My Marketplace Listings</h4>
+            <p class="text-secondary small mb-0">Track your items, mark listings as completed/sold to earn contribution points, and review offers.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('marketplace.create_item') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Post New Listing
+            </a>
+            <a href="{{ url_for('marketplace.manage_offers') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-cash-coin me-1"></i> View Offers
+            </a>
+        </div>
+    </div>
+
+    {% if listings %}
+        <div class="table-responsive cs-card p-0">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Item</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Condition</th>
+                        <th>Status</th>
+                        <th>Date Posted</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in listings %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="fw-bold text-dark text-decoration-none">
+                                    {{ item.title }}
+                                </a>
+                                <div class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</div>
+                            </td>
+                            <td><span class="badge bg-light text-secondary border">{{ item.category }}</span></td>
+                            <td>
+                                {% if item.is_free or item.price == 0 %}
+                                    <span class="badge bg-success-subtle text-success">FREE</span>
+                                {% else %}
+                                    <strong>₹{{ item.price|int }}</strong>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.condition }}</td>
+                            <td>
+                                {% if item.status == 'available' %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                {% elif item.status == 'reserved' %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Reserved</span>
+                                {% elif item.status == 'sold' %}
+                                    <span class="badge bg-secondary text-white">Sold</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ item.created_at.strftime('%d %b %Y') if item.created_at else 'Recent' }}</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a href="{{ url_for('marketplace.view_item', item_id=item._id) }}" class="btn btn-outline-secondary btn-sm" title="View Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if item.status != 'sold' %}
+                                        <form method="POST" action="{{ url_for('marketplace.mark_sold', item_id=item._id) }}">
+                                            <button type="submit" class="btn btn-success btn-sm" title="Mark as Sold (+10 pts)">
+                                                <i class="bi bi-check2"></i> Mark Sold
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="cs-card text-center py-5">
+            <i class="bi bi-tag text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark">No Listings Yet</h5>
+            <p class="text-muted small mb-3">You haven't posted any second-hand items or academic giveaways on Campus Marketplace.</p>
+            <a href="{{ url_for('marketplace.create_item') }}" class="btn btn-cs-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Create Your First Listing
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}My Uploaded Resources – CAMPUSSHARE{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>My Uploaded Resources</h4>
+            <p class="text-secondary small mb-0">Manage study notes, equipment records, and submissions you have contributed</p>
+        </div>
+        <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-cs-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Upload New
+        </a>
+    </div>
+
+    <div class="cs-card">
+        {% if uploads %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Resource Title</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Downloads / Views</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in uploads %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    <a href="{{ url_for('resources.view_resource', resource_id=u._id) }}" class="text-decoration-none text-dark">
+                                        {{ u.title }}
+                                    </a>
+                                </div>
+                                <small class="text-muted">{{ u.department }} &bull; Sem {{ u.semester }}</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ u.category }}</span></td>
+                            <td><span class="badge bg-light text-secondary border">{{ u.resource_type|upper }}</span></td>
+                            <td>
+                                {% if u.resource_type == 'academic' %}
+                                    <i class="bi bi-download me-1 text-primary"></i>{{ u.downloads }}
+                                {% else %}
+                                    <i class="bi bi-eye me-1 text-secondary"></i>{{ u.views }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="cs-badge cs-badge-{{ u.status }}">{{ u.status|upper }}</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('resources.view_resource', resource_id=u._id) }}" class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('resources.edit_resource', resource_id=u._id) }}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('resources.delete_resource', resource_id=u._id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to delete this resource?');" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted small">
+                <i class="bi bi-cloud-arrow-up fs-1 text-secondary d-block mb-2"></i>
+                You haven't uploaded any resources yet.
+                <div class="mt-3">
+                    <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-cs-primary btn-sm">Upload Your First Resource</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
