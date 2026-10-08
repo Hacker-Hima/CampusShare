@@ -161,9 +161,9 @@ When running `python -m database.indexes`, MongoDB's query planner verifies:
 
 ---
 
-## 6. CampusShare 2.0 Ecosystem Innovations
+## 6. CampusShare Ecosystem Innovations
 
-CampusShare 2.0 expands from a basic academic repository into a complete campus social and resource economy:
+CampusShare expands from a basic academic repository into a complete campus social and resource economy:
 
 1. **Campus Marketplace (Buy / Sell / Free / Exchange / Bidding):**
    - Enables students to buy, sell, exchange, or giveaway semester essentials (calculators, lab kits, engineering instruments, bicycles, textbooks).
@@ -179,7 +179,7 @@ CampusShare 2.0 expands from a basic academic repository into a complete campus 
    - Centralized reporting of lost and found campus belongings with photo upload, security logging, and ownership claim verification workflows.
 6. **Campus Impact & Sustainability Metrics (`/impact`):**
    - Tracks eco-friendly campus metrics: items kept in circulation, successful peer exchanges, and cumulative student monetary savings (₹).
-7. **Admin 2.0 Moderation Hub:**
+7. **Admin Moderation Hub:**
    - One-click student account verification, dispute resolution management, marketplace listings audit, and priority campus broadcast announcements.
 
 ---
@@ -211,7 +211,7 @@ db['reservations'].find_one({
 ```
 If a conflicting document is returned, the reservation is rejected with an explanatory flash message."
 
-### Q6: How does the Smart Resource Matching Engine work in CampusShare 2.0?
+### Q6: How does the Smart Resource Matching Engine work in CampusShare?
 > **Answer:** "When a student posts a wanted request, our smart matching utility tokenizes the request title and tags, filters stop-words, and runs multi-collection queries across both `resources` (for academic lecture notes, past papers, lab manuals) and `marketplace` (for calculators, lab kits, books). It builds case-insensitive `$regex` matching patterns with departmental boost filters to surface relevant resources with zero latency."
 
 ### Q7: How is the Trust Score calculated and maintained?

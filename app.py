@@ -23,7 +23,7 @@ from routes.lost_found import lost_found_bp
 
 def create_app():
     """
-    Application factory pattern for CampusShare 2.0.
+    Application factory pattern for CampusShare.
     Initializes Flask application, configuration, and registers blueprints.
     """
     app = Flask(__name__)
@@ -59,7 +59,7 @@ def create_app():
                 unread_msgs = 0
 
         return {
-            'app_name': 'CAMPUSSHARE 2.0',
+            'app_name': 'CAMPUSSHARE',
             'registered_blueprints': list(app.blueprints.keys()),
             'unread_notifications_count': unread_notifs,
             'unread_messages_count': unread_msgs,

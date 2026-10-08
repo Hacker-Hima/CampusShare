@@ -344,10 +344,10 @@ class CampusShareE2ETestCase(unittest.TestCase):
         print("[OK] Lost & Found and Trust Reputation verified.")
 
     # =========================================================================
-    # 10. Campus Impact & Admin 2.0 Moderation Hub
+    # 10. Campus Impact & Admin Moderation Hub
     # =========================================================================
     def test_10_admin_2_0_moderation_and_campus_impact(self):
-        """Tests Campus Impact sustainability page and Admin 2.0 moderation panels."""
+        """Tests Campus Impact sustainability page and Admin moderation panels."""
         # Public Campus Impact page
         res_impact = self.client.get('/impact')
         self.assertEqual(res_impact.status_code, 200)
@@ -375,7 +375,7 @@ class CampusShareE2ETestCase(unittest.TestCase):
             self.assertEqual(res_verify.status_code, 200)
 
         self.client.get('/auth/logout')
-        print("[OK] Campus Impact & Admin 2.0 Moderation Hub verified.")
+        print("[OK] Campus Impact & Admin Moderation Hub verified.")
 
 
 if __name__ == '__main__':

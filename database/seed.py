@@ -302,7 +302,7 @@ def seed_database():
         ])
         print("[Database Seed] Seeded sample borrowings, requests, reservations, activities & notifications.")
 
-    # 4. Ensure demo student accounts have complete 2.0 reputation profile
+    # 4. Ensure demo student accounts have complete reputation profile
     users_col.update_one({"username": "rahul_cse"}, {"$set": {
         "student_id": "22CSE1048",
         "is_verified": True,
@@ -589,7 +589,7 @@ def seed_database():
     announcements_col = db['announcements']
     if announcements_col.count_documents({}) == 0:
         announcements_col.insert_one({
-            "title": "🌱 CampusShare 2.0 Eco-Reuse & Resource Sharing Drive",
+            "title": "🌱 CampusShare Eco-Reuse & Resource Sharing Drive",
             "content": "Join our campus sustainability mission! Share unused lab kits, scientific calculators, and semester notes to keep resources in circulation and earn Campus Champion badges.",
             "author_id": str(admin_id),
             "author_name": "System Administrator",
