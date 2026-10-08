@@ -6,3 +6,5 @@ uploads/*
 !uploads/.gitkeep
 .vscode/
 .idea/
+report/*
+!report/.gitkeep
